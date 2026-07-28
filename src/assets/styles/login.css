@@ -1,0 +1,104 @@
+.login-page,
+.dashboard-temporal {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  background: linear-gradient(135deg, #111827, #1d4ed8);
+}
+
+.login-card,
+.dashboard-card {
+  width: 100%;
+  max-width: 430px;
+  padding: 36px;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.2);
+}
+
+.login-logo {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.login-logo h1,
+.dashboard-card h1 {
+  margin-bottom: 8px;
+}
+
+.login-logo p,
+.dashboard-card p {
+  color: #6b7280;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.form-group input {
+  padding: 13px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 9px;
+}
+
+.btn-login,
+.btn-registro {
+  width: 100%;
+  padding: 13px;
+  border: none;
+  border-radius: 9px;
+  font-weight: bold;
+}
+
+.btn-login {
+  background: #2563eb;
+  color: white;
+}
+
+.btn-registro {
+  margin-top: 14px;
+  background: #e5e7eb;
+}
+
+.mensaje-login {
+  min-height: 20px;
+  text-align: center;
+}
+
+.mensaje-error {
+  color: #dc2626;
+}
+
+.credenciales-demo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 22px;
+  padding: 14px;
+  border-radius: 9px;
+  background: #eff6ff;
+  font-size: 13px;
+}
+
+.dashboard-card {
+  text-align: center;
+}
+
+.dashboard-card .btn-login {
+  margin-top: 24px;
+}

@@ -1,0 +1,25 @@
+/* responsive.css */
+
+/* Tablets */
+@media (max-width: 1024px) {
+  .dashboard {
+    padding: 16px;
+  }
+}
+
+/* Celulares */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+  }
+
+  .tabla-datos {
+    overflow-x: auto;
+    display: block;
+  }
+
+  .chatbot-flotante {
+    right: 16px;
+    bottom: 16px;
+  }
+}
