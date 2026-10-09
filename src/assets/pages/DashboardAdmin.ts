@@ -28,6 +28,11 @@ import {
 } from './Reportes'
 
 import {
+  activarModuloPerfil,
+  crearModuloPerfil,
+} from './Profile'
+
+import {
   activarModuloNotificaciones,
   actualizarContadorNotificaciones,
   crearModuloNotificaciones,
@@ -74,6 +79,11 @@ export function mostrarDashboardAdmin(app: HTMLDivElement): void {
               <span>Clientes</span>
             </button>
 
+            <button class="menu-item" data-seccion="perfil">
+              <span class="crm-nav-icon">👤</span>
+              <span>Perfil del cliente</span>
+            </button>
+
             <button class="menu-item" data-seccion="leads">
               <span class="crm-nav-icon">🎯</span>
               <span>Leads</span>
@@ -87,6 +97,21 @@ export function mostrarDashboardAdmin(app: HTMLDivElement): void {
             <button class="menu-item" data-seccion="citas">
               <span class="crm-nav-icon">📅</span>
               <span>Citas</span>
+            </button>
+
+            <button class="menu-item" data-seccion="mensajes">
+              <span class="crm-nav-icon">💬</span>
+              <span>Mensajes</span>
+            </button>
+
+            <button class="menu-item" data-seccion="documentos">
+              <span class="crm-nav-icon">📄</span>
+              <span>Documentos</span>
+            </button>
+
+            <button class="menu-item" data-seccion="seguimiento">
+              <span class="crm-nav-icon">📌</span>
+              <span>Seguimiento</span>
             </button>
 
             <button class="menu-item" data-seccion="notificaciones">
@@ -110,6 +135,11 @@ export function mostrarDashboardAdmin(app: HTMLDivElement): void {
             <button class="menu-item" data-seccion="chatbot">
               <span class="crm-nav-icon">🤖</span>
               <span>Chatbot</span>
+            </button>
+
+            <button class="menu-item" data-seccion="configuracion">
+              <span class="crm-nav-icon">⚙️</span>
+              <span>Configuración</span>
             </button>
           </nav>
         </div>
@@ -214,9 +244,9 @@ export function mostrarDashboardAdmin(app: HTMLDivElement): void {
         <section class="crm-card crm-workspace">
           <div class="crm-workspace-header">
             <div>
-              <h2 id="titulo-seccion">Clientes recientes</h2>
+              <h2 id="titulo-seccion">Resumen general</h2>
               <p id="descripcion-seccion">
-                Clientes registrados en el sistema
+                Vista general de la actividad del CRM
               </p>
             </div>
 
@@ -224,13 +254,14 @@ export function mostrarDashboardAdmin(app: HTMLDivElement): void {
               id="nuevo-cliente"
               class="btn-primary"
               type="button"
+              style="display: none;"
             >
               + Nuevo cliente
             </button>
           </div>
 
           <div id="contenido-dashboard">
-            ${crearModuloClientes(clientes)}
+            ${crearInicioAdministrador(clientes, leads, asesores, citas)}
           </div>
         </section>
 
@@ -300,7 +331,7 @@ function activarDashboardAdmin(app: HTMLDivElement): void {
     activarSeccionDesdeAccesoRapido('chatbot')
   })
 
-  activarEventosClientes()
+  activarInicioAdministrador()
   actualizarContadorNotificaciones()
 }
 
@@ -338,14 +369,35 @@ function mostrarSeccion(seccion: string): void {
     return
   }
 
-  if (seccion === 'inicio' || seccion === 'clientes') {
+  if (seccion === 'inicio') {
+    const clientes = obtenerClientes()
+    const leads = obtenerLeads()
+    const asesores = obtenerAsesores()
+    const citas = obtenerCitas()
+
+    titulo.textContent = 'Resumen general'
+    descripcion.textContent =
+      'Vista general de la actividad del CRM'
+
+    if (botonNuevoCliente) {
+      botonNuevoCliente.style.display = 'none'
+    }
+
+    contenido.innerHTML = crearInicioAdministrador(
+      clientes,
+      leads,
+      asesores,
+      citas,
+    )
+
+    activarInicioAdministrador()
+    return
+  }
+
+  if (seccion === 'clientes') {
     const clientes = obtenerClientes()
 
-    titulo.textContent =
-      seccion === 'inicio'
-        ? 'Clientes recientes'
-        : 'Gestión de clientes'
-
+    titulo.textContent = 'Gestión de clientes'
     descripcion.textContent =
       'Clientes registrados en el sistema'
 
@@ -354,8 +406,21 @@ function mostrarSeccion(seccion: string): void {
     }
 
     contenido.innerHTML = crearModuloClientes(clientes)
-
     activarEventosClientes()
+    return
+  }
+
+  if (seccion === 'perfil') {
+    titulo.textContent = 'Perfil del cliente'
+    descripcion.textContent =
+      'Información, citas y seguimiento del cliente'
+
+    if (botonNuevoCliente) {
+      botonNuevoCliente.style.display = 'none'
+    }
+
+    contenido.innerHTML = crearModuloPerfil()
+    activarModuloPerfil()
 
     return
   }
@@ -395,6 +460,45 @@ function mostrarSeccion(seccion: string): void {
     contenido.innerHTML = crearModuloCitas()
     activarModuloCitas()
 
+    return
+  }
+
+  if (seccion === 'mensajes') {
+    titulo.textContent = 'Mensajes'
+    descripcion.textContent =
+      'Conversaciones entre clientes y asesores'
+
+    if (botonNuevoCliente) {
+      botonNuevoCliente.style.display = 'none'
+    }
+
+    contenido.innerHTML = crearModuloMensajesAdmin()
+    return
+  }
+
+  if (seccion === 'documentos') {
+    titulo.textContent = 'Documentos'
+    descripcion.textContent =
+      'Contratos, cotizaciones y archivos compartidos'
+
+    if (botonNuevoCliente) {
+      botonNuevoCliente.style.display = 'none'
+    }
+
+    contenido.innerHTML = crearModuloDocumentosAdmin()
+    return
+  }
+
+  if (seccion === 'seguimiento') {
+    titulo.textContent = 'Seguimiento de clientes'
+    descripcion.textContent =
+      'Estado y avance de los procesos comerciales'
+
+    if (botonNuevoCliente) {
+      botonNuevoCliente.style.display = 'none'
+    }
+
+    contenido.innerHTML = crearModuloSeguimientoAdmin()
     return
   }
 
@@ -445,17 +549,35 @@ function mostrarSeccion(seccion: string): void {
     return
   }
 
+  if (seccion === 'configuracion') {
+    titulo.textContent = 'Configuración'
+    descripcion.textContent =
+      'Preferencias generales del panel administrativo'
+
+    if (botonNuevoCliente) {
+      botonNuevoCliente.style.display = 'none'
+    }
+
+    contenido.innerHTML = crearModuloConfiguracionAdmin()
+    return
+  }
+
   if (botonNuevoCliente) {
     botonNuevoCliente.style.display = 'none'
   }
 
   const nombres: Record<string, string> = {
+    perfil: 'Perfil del cliente',
     leads: 'Leads',
     asesores: 'Asesores',
     citas: 'Citas',
+    mensajes: 'Mensajes',
+    documentos: 'Documentos',
+    seguimiento: 'Seguimiento',
     notificaciones: 'Notificaciones',
     reportes: 'Reportes',
     chatbot: 'Chatbot',
+    configuracion: 'Configuración',
   }
 
   const nombreSeccion = nombres[seccion] ?? 'Módulo'
@@ -471,6 +593,546 @@ function mostrarSeccion(seccion: string): void {
       <p>Este módulo se desarrollará en el siguiente paso.</p>
     </div>
   `
+}
+
+
+function crearInicioAdministrador(
+  clientes: Cliente[],
+  leads: ReturnType<typeof obtenerLeads>,
+  asesores: ReturnType<typeof obtenerAsesores>,
+  citas: ReturnType<typeof obtenerCitas>,
+): string {
+  const citasHoy = citas.filter(
+    (cita: { fecha?: string }) =>
+      cita.fecha === obtenerFechaActual(),
+  )
+
+  const citasPendientes = citas.filter(
+    (cita: { estado?: string }) =>
+      cita.estado?.toLowerCase() === 'pendiente',
+  )
+
+  const leadsPendientes = leads.filter(
+    (lead: { estado?: string }) =>
+      !lead.estado ||
+      lead.estado.toLowerCase().includes('nuevo') ||
+      lead.estado.toLowerCase().includes('pendiente'),
+  )
+
+  return `
+    <div class="admin-dashboard-v2">
+      <section class="admin-hero-v2">
+        <div class="admin-hero-contenido">
+          <span class="admin-hero-etiqueta">
+            👋 Bienvenido, Administrador
+          </span>
+
+          <h2>Todo tu CRM en un solo lugar</h2>
+
+          <p>
+            Revisa la actividad de Karsan Digital, administra
+            clientes y da seguimiento a las solicitudes pendientes.
+          </p>
+
+          <div class="admin-hero-resumen">
+            <span>
+              <strong>${citasHoy.length}</strong>
+              citas para hoy
+            </span>
+
+            <span>
+              <strong>${leadsPendientes.length}</strong>
+              leads por revisar
+            </span>
+
+            <span>
+              <strong>${clientes.length}</strong>
+              clientes activos
+            </span>
+          </div>
+
+          <div class="admin-hero-acciones">
+            <button
+              id="admin-ir-clientes"
+              class="btn-primary"
+              type="button"
+            >
+              👥 Gestionar clientes
+            </button>
+
+            <button
+              class="btn-outline admin-acceso-directo"
+              data-admin-acceso="citas"
+              type="button"
+            >
+              📅 Ver citas
+            </button>
+
+            <button
+              class="btn-outline admin-acceso-directo"
+              data-admin-acceso="reportes"
+              type="button"
+            >
+              📊 Ver reportes
+            </button>
+          </div>
+        </div>
+
+        <div class="admin-hero-ilustracion" aria-hidden="true">
+          <div class="admin-hero-orbita orbita-uno"></div>
+          <div class="admin-hero-orbita orbita-dos"></div>
+
+          <div class="admin-hero-icono-principal">📈</div>
+
+          <span class="admin-hero-mini mini-clientes">👥</span>
+          <span class="admin-hero-mini mini-citas">📅</span>
+          <span class="admin-hero-mini mini-chat">💬</span>
+        </div>
+      </section>
+
+      <section class="admin-contenido-principal">
+        <article class="admin-card-v2 admin-grafico-card">
+          <div class="admin-card-cabecera">
+            <div>
+              <span class="admin-card-etiqueta">Rendimiento</span>
+              <h3>Actividad comercial</h3>
+              <p>Resumen visual de los registros del CRM.</p>
+            </div>
+
+            <button
+              class="admin-card-enlace"
+              data-admin-acceso="reportes"
+              type="button"
+            >
+              Ver reporte →
+            </button>
+          </div>
+
+          ${crearGraficoActividadAdmin(
+            clientes.length,
+            leads.length,
+            citas.length,
+            asesores.length,
+          )}
+        </article>
+
+        <article class="admin-card-v2 admin-calendario-card">
+          <div class="admin-card-cabecera">
+            <div>
+              <span class="admin-card-etiqueta">Agenda</span>
+              <h3>Calendario del mes</h3>
+              <p>Días con citas registradas.</p>
+            </div>
+
+            <button
+              class="admin-card-enlace"
+              data-admin-acceso="citas"
+              type="button"
+            >
+              Abrir citas →
+            </button>
+          </div>
+
+          ${crearMiniCalendarioAdmin(citas)}
+        </article>
+      </section>
+
+      <section class="admin-contenido-secundario">
+        <article class="admin-card-v2">
+          <div class="admin-card-cabecera">
+            <div>
+              <span class="admin-card-etiqueta">Pendientes</span>
+              <h3>Actividad reciente</h3>
+              <p>Acciones que requieren atención.</p>
+            </div>
+          </div>
+
+          <div class="admin-actividad-v2">
+            <button data-admin-acceso="leads" type="button">
+              <span class="actividad-icono actividad-rojo">🎯</span>
+
+              <span class="actividad-texto">
+                <strong>${leadsPendientes.length} leads por revisar</strong>
+                <small>Asigna los nuevos contactos a un asesor.</small>
+              </span>
+
+              <span class="actividad-flecha">›</span>
+            </button>
+
+            <button data-admin-acceso="citas" type="button">
+              <span class="actividad-icono actividad-amarillo">📅</span>
+
+              <span class="actividad-texto">
+                <strong>${citasPendientes.length} citas pendientes</strong>
+                <small>Confirma o reasigna las solicitudes.</small>
+              </span>
+
+              <span class="actividad-flecha">›</span>
+            </button>
+
+            <button data-admin-acceso="clientes" type="button">
+              <span class="actividad-icono actividad-azul">👥</span>
+
+              <span class="actividad-texto">
+                <strong>${clientes.length} clientes registrados</strong>
+                <small>Consulta y actualiza sus datos.</small>
+              </span>
+
+              <span class="actividad-flecha">›</span>
+            </button>
+
+            <button data-admin-acceso="mensajes" type="button">
+              <span class="actividad-icono actividad-verde">💬</span>
+
+              <span class="actividad-texto">
+                <strong>Centro de mensajes</strong>
+                <small>Revisa las solicitudes de atención.</small>
+              </span>
+
+              <span class="actividad-flecha">›</span>
+            </button>
+          </div>
+        </article>
+
+        <article class="admin-card-v2">
+          <div class="admin-card-cabecera">
+            <div>
+              <span class="admin-card-etiqueta">Herramientas</span>
+              <h3>Accesos rápidos</h3>
+              <p>Abre los módulos que más utilizas.</p>
+            </div>
+          </div>
+
+          <div class="admin-accesos-v2">
+            <button data-admin-acceso="clientes" type="button">
+              <span>👥</span>
+              <strong>Clientes</strong>
+              <small>Administrar</small>
+            </button>
+
+            <button data-admin-acceso="leads" type="button">
+              <span>🎯</span>
+              <strong>Leads</strong>
+              <small>Revisar</small>
+            </button>
+
+            <button data-admin-acceso="citas" type="button">
+              <span>📅</span>
+              <strong>Citas</strong>
+              <small>Calendario</small>
+            </button>
+
+            <button data-admin-acceso="mensajes" type="button">
+              <span>💬</span>
+              <strong>Mensajes</strong>
+              <small>Responder</small>
+            </button>
+
+            <button data-admin-acceso="reportes" type="button">
+              <span>📊</span>
+              <strong>Reportes</strong>
+              <small>Analizar</small>
+            </button>
+
+            <button data-admin-acceso="chatbot" type="button">
+              <span>🤖</span>
+              <strong>Chatbot</strong>
+              <small>Configurar</small>
+            </button>
+          </div>
+        </article>
+      </section>
+
+      <section class="admin-card-v2 admin-estado-v2">
+        <div class="admin-card-cabecera">
+          <div>
+            <span class="admin-card-etiqueta">Sistema</span>
+            <h3>Estado de las funciones</h3>
+            <p>Resumen de los módulos principales del CRM.</p>
+          </div>
+        </div>
+
+        <div class="admin-estado-grid-v2">
+          <div>
+            <span class="estado-punto activo"></span>
+            <p>
+              <strong>CRM operativo</strong>
+              <small>El panel funciona correctamente</small>
+            </p>
+          </div>
+
+          <div>
+            <span class="estado-punto activo"></span>
+            <p>
+              <strong>Clientes y leads</strong>
+              <small>Módulos disponibles</small>
+            </p>
+          </div>
+
+          <div>
+            <span class="estado-punto activo"></span>
+            <p>
+              <strong>Chatbot disponible</strong>
+              <small>Configuración local activa</small>
+            </p>
+          </div>
+
+          <div>
+            <span class="estado-punto pendiente"></span>
+            <p>
+              <strong>WhatsApp pendiente</strong>
+              <small>Falta conectar la API oficial</small>
+            </p>
+          </div>
+        </div>
+      </section>
+    </div>
+  `
+}
+
+function crearGraficoActividadAdmin(
+  clientes: number,
+  leads: number,
+  citas: number,
+  asesores: number,
+): string {
+  const valores = [
+    { nombre: 'Clientes', valor: clientes, icono: '👥' },
+    { nombre: 'Leads', valor: leads, icono: '🎯' },
+    { nombre: 'Citas', valor: citas, icono: '📅' },
+    { nombre: 'Asesores', valor: asesores, icono: '🧑‍💼' },
+  ]
+
+  const maximo = Math.max(...valores.map((item) => item.valor), 1)
+
+  return `
+    <div class="admin-grafico-v2">
+      ${valores
+        .map((item) => {
+          const porcentaje = Math.max(
+            8,
+            Math.round((item.valor / maximo) * 100),
+          )
+
+          return `
+            <div class="admin-barra-item">
+              <div class="admin-barra-datos">
+                <span>${item.icono} ${item.nombre}</span>
+                <strong>${item.valor}</strong>
+              </div>
+
+              <div class="admin-barra-fondo">
+                <span style="width: ${porcentaje}%"></span>
+              </div>
+            </div>
+          `
+        })
+        .join('')}
+    </div>
+  `
+}
+
+function crearMiniCalendarioAdmin(
+  citas: ReturnType<typeof obtenerCitas>,
+): string {
+  const hoy = new Date()
+  const anio = hoy.getFullYear()
+  const mes = hoy.getMonth()
+  const primerDia = new Date(anio, mes, 1)
+  const totalDias = new Date(anio, mes + 1, 0).getDate()
+  const desplazamiento = (primerDia.getDay() + 6) % 7
+  const dias: string[] = []
+
+  for (let i = 0; i < desplazamiento; i += 1) {
+    dias.push('<span class="mini-calendario-vacio"></span>')
+  }
+
+  for (let dia = 1; dia <= totalDias; dia += 1) {
+    const fecha = `${anio}-${String(mes + 1).padStart(2, '0')}-${String(
+      dia,
+    ).padStart(2, '0')}`
+
+    const cantidadCitas = citas.filter(
+      (cita: { fecha?: string }) => cita.fecha === fecha,
+    ).length
+
+    const esHoy = hoy.getDate() === dia
+
+    dias.push(`
+      <button
+        class="mini-calendario-dia ${esHoy ? 'es-hoy' : ''} ${
+          cantidadCitas > 0 ? 'tiene-cita' : ''
+        }"
+        data-admin-acceso="citas"
+        type="button"
+        title="${
+          cantidadCitas > 0
+            ? `${cantidadCitas} cita(s)`
+            : 'Sin citas'
+        }"
+      >
+        ${dia}
+        ${cantidadCitas > 0 ? '<i></i>' : ''}
+      </button>
+    `)
+  }
+
+  const nombreMes = new Intl.DateTimeFormat('es-ES', {
+    month: 'long',
+    year: 'numeric',
+  }).format(hoy)
+
+  return `
+    <div class="mini-calendario-v2">
+      <div class="mini-calendario-mes">
+        ${nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1)}
+      </div>
+
+      <div class="mini-calendario-semana">
+        <span>L</span>
+        <span>M</span>
+        <span>X</span>
+        <span>J</span>
+        <span>V</span>
+        <span>S</span>
+        <span>D</span>
+      </div>
+
+      <div class="mini-calendario-dias">
+        ${dias.join('')}
+      </div>
+    </div>
+  `
+}
+
+function activarInicioAdministrador(): void {
+  document
+    .querySelector<HTMLButtonElement>('#admin-ir-clientes')
+    ?.addEventListener('click', () => {
+      activarSeccionDesdeAccesoRapido('clientes')
+    })
+
+  document
+    .querySelectorAll<HTMLButtonElement>('[data-admin-acceso]')
+    .forEach((boton) => {
+      boton.addEventListener('click', () => {
+        const seccion = boton.dataset.adminAcceso
+
+        if (seccion) {
+          activarSeccionDesdeAccesoRapido(seccion)
+        }
+      })
+    })
+}
+
+function crearModuloMensajesAdmin(): string {
+  return `
+    <div class="admin-modulo-placeholder">
+      <span class="admin-placeholder-icono">💬</span>
+      <h3>Centro de mensajes</h3>
+      <p>
+        Aquí se mostrarán las conversaciones entre clientes,
+        asesores y administradores.
+      </p>
+
+      <div class="admin-placeholder-lista">
+        <span>• Bandeja de conversaciones</span>
+        <span>• Mensajes sin leer</span>
+        <span>• Envío de respuestas y archivos</span>
+      </div>
+    </div>
+  `
+}
+
+function crearModuloDocumentosAdmin(): string {
+  return `
+    <div class="admin-modulo-placeholder">
+      <span class="admin-placeholder-icono">📄</span>
+      <h3>Gestión de documentos</h3>
+      <p>
+        Desde aquí podrás subir contratos, cotizaciones y
+        archivos para cada cliente.
+      </p>
+
+      <button class="btn-primary" type="button">
+        + Subir documento
+      </button>
+    </div>
+  `
+}
+
+function crearModuloSeguimientoAdmin(): string {
+  return `
+    <div class="admin-seguimiento-grid">
+      <article class="admin-seguimiento-card completado">
+        <span>1</span>
+        <h3>Registro</h3>
+        <p>Clientes que completaron su registro.</p>
+      </article>
+
+      <article class="admin-seguimiento-card activo">
+        <span>2</span>
+        <h3>Solicitud</h3>
+        <p>Solicitudes pendientes de revisión.</p>
+      </article>
+
+      <article class="admin-seguimiento-card">
+        <span>3</span>
+        <h3>Atención</h3>
+        <p>Clientes atendidos por un asesor.</p>
+      </article>
+
+      <article class="admin-seguimiento-card">
+        <span>4</span>
+        <h3>Finalizado</h3>
+        <p>Procesos comerciales completados.</p>
+      </article>
+    </div>
+  `
+}
+
+function crearModuloConfiguracionAdmin(): string {
+  return `
+    <div class="admin-configuracion-grid">
+      <article class="admin-config-card">
+        <span>🏢</span>
+        <div>
+          <h3>Datos de la empresa</h3>
+          <p>Nombre, correo y datos generales del CRM.</p>
+        </div>
+        <button class="btn-outline" type="button">Editar</button>
+      </article>
+
+      <article class="admin-config-card">
+        <span>🔐</span>
+        <div>
+          <h3>Seguridad</h3>
+          <p>Contraseña y opciones de acceso administrativo.</p>
+        </div>
+        <button class="btn-outline" type="button">
+          Cambiar contraseña
+        </button>
+      </article>
+
+      <article class="admin-config-card">
+        <span>🔔</span>
+        <div>
+          <h3>Preferencias</h3>
+          <p>Configuración de avisos y notificaciones.</p>
+        </div>
+        <button class="btn-outline" type="button">Configurar</button>
+      </article>
+    </div>
+  `
+}
+
+function obtenerFechaActual(): string {
+  const hoy = new Date()
+  const anio = hoy.getFullYear()
+  const mes = String(hoy.getMonth() + 1).padStart(2, '0')
+  const dia = String(hoy.getDate()).padStart(2, '0')
+
+  return `${anio}-${mes}-${dia}`
 }
 
 function crearModuloClientes(clientes: Cliente[]): string {
