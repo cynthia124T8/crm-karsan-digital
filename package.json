@@ -1,15 +1,15 @@
 {
-  "name": "crm-karsan-digital-frontend",
-  "private": true,
-  "version": "1.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
-  },
-  "devDependencies": {
-    "typescript": "^5.8.3",
-    "vite": "^7.0.0"
-  }
+"name": "crm-karsan-digital-frontend",
+"private": true,
+"version": "1.0.0",
+"type": "module",
+"scripts": {
+"dev": "vite",
+"build": "node ./node_modules/vite/bin/vite.js build",
+"preview": "vite preview"
+},
+"devDependencies": {
+"typescript": "^5.8.3",
+"vite": "^7.0.0"
+}
 }
