@@ -286,33 +286,50 @@ export function activarModuloChatbot(): void {
   }
 
   const usuario = obtenerUsuarioActivo()
+
   cargarDatosUsuario(usuario)
   cargarHistorial(contenedorMensajes)
 
   function abrirChatbot(): void {
-    ventana!.classList.remove('chatbot-oculto')
+    ventana.classList.remove('chatbot-oculto')
     botonFlotante?.classList.add('chatbot-boton-oculto')
 
-    if (contenedorMensajes!.children.length === 0) {
+    if (contenedorMensajes.children.length === 0) {
       iniciarConversacion(usuario)
     }
 
-    input!.focus()
+    input.focus()
   }
 
   function cerrarChatbot(): void {
-    ventana!.classList.add('chatbot-oculto')
+    ventana.classList.add('chatbot-oculto')
     botonFlotante?.classList.remove('chatbot-boton-oculto')
   }
 
-  botonFlotante?.addEventListener('click', abrirChatbot)
-  botonProbar?.addEventListener('click', abrirChatbot)
-  botonCerrar?.addEventListener('click', cerrarChatbot)
-  botonMinimizar?.addEventListener('click', cerrarChatbot)
+  botonFlotante?.addEventListener(
+    'click',
+    abrirChatbot,
+  )
+
+  botonProbar?.addEventListener(
+    'click',
+    abrirChatbot,
+  )
+
+  botonCerrar?.addEventListener(
+    'click',
+    cerrarChatbot,
+  )
+
+  botonMinimizar?.addEventListener(
+    'click',
+    cerrarChatbot,
+  )
 
   botonesOpciones.forEach((boton) => {
     boton.addEventListener('click', () => {
-      const opcion = boton.dataset.opcionChatbot ?? ''
+      const opcion =
+        boton.dataset.opcionChatbot ?? ''
 
       const textos: Record<string, string> = {
         servicios: 'Ver servicios',
@@ -331,7 +348,8 @@ export function activarModuloChatbot(): void {
   })
 
   archivo?.addEventListener('change', () => {
-    const nombreArchivo = archivo.files?.[0]?.name
+    const nombreArchivo =
+      archivo.files?.[0]?.name
 
     if (!nombreArchivo) {
       return
@@ -364,6 +382,7 @@ export function activarModuloChatbot(): void {
     })
 
     input.value = ''
+
     procesarRespuesta(texto, usuario)
   })
 
@@ -398,6 +417,7 @@ export function activarModuloChatbot(): void {
       responderDespues(
         `Mucho gusto, ${texto}. ¿Cuál es tu correo electrónico?`,
       )
+
       return
     }
 
@@ -406,6 +426,7 @@ export function activarModuloChatbot(): void {
         responderDespues(
           'Ese correo no parece válido. Escríbelo nuevamente.',
         )
+
         return
       }
 
@@ -415,6 +436,7 @@ export function activarModuloChatbot(): void {
       responderDespues(
         'Perfecto. Ahora escribe tu número de teléfono.',
       )
+
       return
     }
 
@@ -425,6 +447,7 @@ export function activarModuloChatbot(): void {
         responderDespues(
           'El teléfono debe tener al menos 7 números.',
         )
+
         return
       }
 
@@ -434,17 +457,21 @@ export function activarModuloChatbot(): void {
       responderDespues(
         '¿Qué servicio necesitas? Por ejemplo: redes sociales, publicidad, página web, CRM o inteligencia artificial.',
       )
+
       return
     }
 
     if (flujoActual === 'captarServicio') {
       datosVisitante.servicio = texto
+
       guardarLeadDesdeChatbot()
+
       flujoActual = 'normal'
 
       responderDespues(
         `Gracias, ${datosVisitante.nombre}. Registré tu solicitud. Un asesor recibirá una notificación y se comunicará contigo pronto. ✅`,
       )
+
       return
     }
 
@@ -455,6 +482,7 @@ export function activarModuloChatbot(): void {
       responderDespues(
         'Indica la fecha que prefieres usando el formato AAAA-MM-DD.',
       )
+
       return
     }
 
@@ -463,6 +491,7 @@ export function activarModuloChatbot(): void {
         responderDespues(
           'La fecha debe escribirse así: 2026-07-30.',
         )
+
         return
       }
 
@@ -472,6 +501,7 @@ export function activarModuloChatbot(): void {
       responderDespues(
         'Ahora indica la hora en formato HH:MM. Ejemplo: 10:30.',
       )
+
       return
     }
 
@@ -480,6 +510,7 @@ export function activarModuloChatbot(): void {
         responderDespues(
           'La hora debe escribirse así: 10:30.',
         )
+
         return
       }
 
@@ -491,12 +522,18 @@ export function activarModuloChatbot(): void {
       )
 
       if (asesores.length === 0) {
-        crearSolicitudCita(usuarioActual, '', 'Por asignar')
+        crearSolicitudCita(
+          usuarioActual,
+          '',
+          'Por asignar',
+        )
+
         flujoActual = 'normal'
 
         responderDespues(
           'Registré tu solicitud. El administrador asignará un asesor y te confirmará la cita.',
         )
+
         return
       }
 
@@ -508,6 +545,7 @@ export function activarModuloChatbot(): void {
           )
           .join('\n')}`,
       )
+
       return
     }
 
@@ -523,6 +561,7 @@ export function activarModuloChatbot(): void {
         responderDespues(
           'Escribe únicamente el número de uno de los asesores mostrados.',
         )
+
         return
       }
 
@@ -539,10 +578,14 @@ export function activarModuloChatbot(): void {
           datosCita.fecha,
         )} a las ${datosCita.hora} con ${asesor.nombre}. El estado inicial es Pendiente. 📅`,
       )
+
       return
     }
 
-    responderPreguntaFrecuente(texto, usuarioActual)
+    responderPreguntaFrecuente(
+      texto,
+      usuarioActual,
+    )
   }
 
   function responderOpcion(
@@ -553,14 +596,19 @@ export function activarModuloChatbot(): void {
       responderDespues(
         'Nuestros servicios incluyen:\n• Gestión de redes sociales\n• Publicidad digital\n• Diseño y desarrollo web\n• Automatización y CRM\n• Inteligencia artificial',
       )
+
       return
     }
 
     if (opcion === 'cita') {
-      if (!usuarioActual || usuarioActual.rol !== 'cliente') {
+      if (
+        !usuarioActual ||
+        usuarioActual.rol !== 'cliente'
+      ) {
         iniciarCapturaLead(
           'Para solicitar una cita necesito registrar tus datos. ¿Cuál es tu nombre?',
         )
+
         return
       }
 
@@ -575,6 +623,7 @@ export function activarModuloChatbot(): void {
       responderDespues(
         'Perfecto 😊 ¿Cuál es el motivo o servicio para la cita?',
       )
+
       return
     }
 
@@ -589,12 +638,14 @@ export function activarModuloChatbot(): void {
         responderDespues(
           'Listo. Avisé al equipo de Karsan Digital. Un asesor se comunicará contigo pronto. ✅',
         )
+
         return
       }
 
       iniciarCapturaLead(
         'Para comunicarte con un asesor necesito registrar tus datos. ¿Cuál es tu nombre?',
       )
+
       return
     }
 
@@ -612,6 +663,7 @@ export function activarModuloChatbot(): void {
 
         datosVisitante.servicio = ''
         flujoActual = 'captarServicio'
+
         return
       }
 
@@ -621,7 +673,9 @@ export function activarModuloChatbot(): void {
     }
   }
 
-  function iniciarCapturaLead(mensaje: string): void {
+  function iniciarCapturaLead(
+    mensaje: string,
+  ): void {
     datosVisitante = {
       nombre: '',
       correo: '',
@@ -630,6 +684,7 @@ export function activarModuloChatbot(): void {
     }
 
     flujoActual = 'captarNombre'
+
     responderDespues(mensaje)
   }
 
@@ -643,7 +698,11 @@ export function activarModuloChatbot(): void {
       mensaje.includes('cita') ||
       mensaje.includes('agendar')
     ) {
-      responderOpcion('cita', usuarioActual)
+      responderOpcion(
+        'cita',
+        usuarioActual,
+      )
+
       return
     }
 
@@ -651,7 +710,11 @@ export function activarModuloChatbot(): void {
       mensaje.includes('asesor') ||
       mensaje.includes('persona')
     ) {
-      responderOpcion('asesor', usuarioActual)
+      responderOpcion(
+        'asesor',
+        usuarioActual,
+      )
+
       return
     }
 
@@ -659,7 +722,11 @@ export function activarModuloChatbot(): void {
       mensaje.includes('servicio') ||
       mensaje.includes('ofrecen')
     ) {
-      responderOpcion('servicios', usuarioActual)
+      responderOpcion(
+        'servicios',
+        usuarioActual,
+      )
+
       return
     }
 
@@ -669,7 +736,11 @@ export function activarModuloChatbot(): void {
       mensaje.includes('cotización') ||
       mensaje.includes('cotizacion')
     ) {
-      responderOpcion('cotizacion', usuarioActual)
+      responderOpcion(
+        'cotizacion',
+        usuarioActual,
+      )
+
       return
     }
 
@@ -680,6 +751,7 @@ export function activarModuloChatbot(): void {
       responderDespues(
         'El horario exacto será confirmado por un asesor. También puedo registrar una solicitud de contacto.',
       )
+
       return
     }
 
@@ -688,8 +760,13 @@ export function activarModuloChatbot(): void {
       mensaje.includes('buenas')
     ) {
       responderDespues(
-        `¡Hola${usuarioActual?.nombre ? `, ${usuarioActual.nombre}` : ''}! 😊 ¿Deseas conocer nuestros servicios, agendar una cita o hablar con un asesor?`,
+        `¡Hola${
+          usuarioActual?.nombre
+            ? `, ${usuarioActual.nombre}`
+            : ''
+        }! 😊 ¿Deseas conocer nuestros servicios, agendar una cita o hablar con un asesor?`,
       )
+
       return
     }
 
@@ -698,10 +775,14 @@ export function activarModuloChatbot(): void {
     )
   }
 
-  function agregarMensaje(mensaje: MensajeChat): void {
-    const hora = mensaje.hora ?? obtenerHoraActual()
+  function agregarMensaje(
+    mensaje: MensajeChat,
+  ): void {
+    const hora =
+      mensaje.hora ?? obtenerHoraActual()
 
-    const elemento = document.createElement('div')
+    const elemento =
+      document.createElement('div')
 
     elemento.className =
       mensaje.autor === 'bot'
@@ -710,16 +791,20 @@ export function activarModuloChatbot(): void {
 
     elemento.innerHTML = `
       <div class="mensaje-contenido">
-        ${escaparHTML(mensaje.texto).replace(/\n/g, '<br>')}
+        ${escaparHTML(mensaje.texto).replace(
+          /\n/g,
+          '<br>',
+        )}
       </div>
       <small>${hora}</small>
     `
 
-    contenedorMensajes!.appendChild(elemento)
-    contenedorMensajes!.scrollTop =
-      contenedorMensajes!.scrollHeight
+    contenedorMensajes.appendChild(elemento)
 
-    guardarHistorial(contenedorMensajes!)
+    contenedorMensajes.scrollTop =
+      contenedorMensajes.scrollHeight
+
+    guardarHistorial(contenedorMensajes)
   }
 
   function responderDespues(
@@ -744,7 +829,8 @@ export function activarModuloChatbot(): void {
 }
 
 function obtenerUsuarioActivo(): UsuarioActivo | null {
-  const datos = localStorage.getItem('usuarioActivo')
+  const datos =
+    localStorage.getItem('usuarioActivo')
 
   if (!datos) {
     return null
@@ -760,7 +846,10 @@ function obtenerUsuarioActivo(): UsuarioActivo | null {
 function cargarDatosUsuario(
   usuario: UsuarioActivo | null,
 ): void {
-  if (!usuario || usuario.rol !== 'cliente') {
+  if (
+    !usuario ||
+    usuario.rol !== 'cliente'
+  ) {
     return
   }
 
@@ -768,13 +857,21 @@ function cargarDatosUsuario(
     localStorage.getItem('clientes')
 
   if (!clientesGuardados) {
-    datosVisitante.nombre = usuario.nombre
-    datosVisitante.correo = usuario.correo
+    datosVisitante.nombre =
+      usuario.nombre
+
+    datosVisitante.correo =
+      usuario.correo
+
+    datosVisitante.telefono =
+      usuario.telefono ?? ''
+
     return
   }
 
   try {
-    const clientes = JSON.parse(clientesGuardados)
+    const clientes =
+      JSON.parse(clientesGuardados)
 
     if (!Array.isArray(clientes)) {
       return
@@ -795,10 +892,18 @@ function cargarDatosUsuario(
       cliente?.correo ?? usuario.correo
 
     datosVisitante.telefono =
-      cliente?.telefono ?? usuario.telefono ?? ''
+      cliente?.telefono ??
+      usuario.telefono ??
+      ''
   } catch {
-    datosVisitante.nombre = usuario.nombre
-    datosVisitante.correo = usuario.correo
+    datosVisitante.nombre =
+      usuario.nombre
+
+    datosVisitante.correo =
+      usuario.correo
+
+    datosVisitante.telefono =
+      usuario.telefono ?? ''
   }
 }
 
@@ -807,16 +912,22 @@ function crearSolicitudCita(
   asesorId: string,
   asesorNombre: string,
 ): void {
-  if (!usuario || usuario.rol !== 'cliente') {
+  if (
+    !usuario ||
+    usuario.rol !== 'cliente'
+  ) {
     return
   }
 
-  const citas = obtenerArreglo<CitaChatbot>('citas')
+  const citas =
+    obtenerArreglo<CitaChatbot>('citas')
 
   const nuevaCita: CitaChatbot = {
     id: crypto.randomUUID(),
-    clienteId: usuario.id ?? usuario.correo,
-    clienteNombre: usuario.nombre,
+    clienteId:
+      usuario.id ?? usuario.correo,
+    clienteNombre:
+      usuario.nombre,
     asesorId,
     asesorNombre,
     fecha: datosCita.fecha,
@@ -827,7 +938,10 @@ function crearSolicitudCita(
 
   localStorage.setItem(
     'citas',
-    JSON.stringify([...citas, nuevaCita]),
+    JSON.stringify([
+      ...citas,
+      nuevaCita,
+    ]),
   )
 
   crearNotificacion(
@@ -840,12 +954,17 @@ function crearSolicitudCita(
 }
 
 function guardarLeadDesdeChatbot(): void {
-  const leads = obtenerArreglo<LeadChatbot>('leads')
+  const leads =
+    obtenerArreglo<LeadChatbot>('leads')
 
   const partesNombre =
-    datosVisitante.nombre.trim().split(' ')
+    datosVisitante.nombre
+      .trim()
+      .split(' ')
 
-  const nombre = partesNombre[0] ?? ''
+  const nombre =
+    partesNombre[0] ?? ''
+
   const apellido =
     partesNombre.slice(1).join(' ') || ''
 
@@ -859,12 +978,16 @@ function guardarLeadDesdeChatbot(): void {
     fuente: 'Chatbot',
     servicio: datosVisitante.servicio,
     estado: 'Nuevo',
-    fechaCreacion: new Date().toISOString(),
+    fechaCreacion:
+      new Date().toISOString(),
   }
 
   localStorage.setItem(
     'leads',
-    JSON.stringify([...leads, nuevoLead]),
+    JSON.stringify([
+      ...leads,
+      nuevoLead,
+    ]),
   )
 
   crearNotificacion(
@@ -874,15 +997,19 @@ function guardarLeadDesdeChatbot(): void {
   )
 }
 
-function obtenerArreglo<T>(clave: string): T[] {
-  const datos = localStorage.getItem(clave)
+function obtenerArreglo<T>(
+  clave: string,
+): T[] {
+  const datos =
+    localStorage.getItem(clave)
 
   if (!datos) {
     return []
   }
 
   try {
-    const resultado = JSON.parse(datos)
+    const resultado =
+      JSON.parse(datos)
 
     return Array.isArray(resultado)
       ? (resultado as T[])
@@ -905,46 +1032,83 @@ function cargarHistorial(
   contenedor: HTMLElement,
 ): void {
   const historial =
-    localStorage.getItem('chatbotHistorial')
+    localStorage.getItem(
+      'chatbotHistorial',
+    )
 
   if (historial) {
-    contenedor.innerHTML = historial
-    contenedor.scrollTop = contenedor.scrollHeight
+    contenedor.innerHTML =
+      historial
+
+    contenedor.scrollTop =
+      contenedor.scrollHeight
   }
 }
 
-function validarCorreo(correo: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)
+function validarCorreo(
+  correo: string,
+): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+    correo,
+  )
 }
 
-function validarFecha(fecha: string): boolean {
-  return /^\d{4}-\d{2}-\d{2}$/.test(fecha)
+function validarFecha(
+  fecha: string,
+): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+    return false
+  }
+
+  const fechaIngresada =
+    new Date(`${fecha}T00:00:00`)
+
+  return !Number.isNaN(
+    fechaIngresada.getTime(),
+  )
 }
 
-function validarHora(hora: string): boolean {
-  return /^([01]\d|2[0-3]):[0-5]\d$/.test(hora)
+function validarHora(
+  hora: string,
+): boolean {
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(
+    hora,
+  )
 }
 
-function formatearFecha(fecha: string): string {
-  const partes = fecha.split('-')
+function formatearFecha(
+  fecha: string,
+): string {
+  const partes =
+    fecha.split('-')
 
   if (partes.length !== 3) {
     return fecha
   }
 
-  const [anio, mes, dia] = partes
+  const [anio, mes, dia] =
+    partes
+
   return `${dia}/${mes}/${anio}`
 }
 
 function obtenerHoraActual(): string {
-  return new Date().toLocaleTimeString('es-EC', {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  return new Date().toLocaleTimeString(
+    'es-EC',
+    {
+      hour: '2-digit',
+      minute: '2-digit',
+    },
+  )
 }
 
-function escaparHTML(texto: string): string {
-  const elemento = document.createElement('div')
+function escaparHTML(
+  texto: string,
+): string {
+  const elemento =
+    document.createElement('div')
+
   elemento.textContent = texto
+
   return elemento.innerHTML
 }

@@ -1,4 +1,5 @@
 import { obtenerAsesores } from './Asesores'
+import { crearNotificacion } from './Notificaciones'
 
 type Cliente = {
   id: string
@@ -72,10 +73,14 @@ function obtenerClientes(): Cliente[] {
 
 export function crearModuloCitas(): string {
   const clientes = obtenerClientes()
-  const asesores = obtenerAsesores()
+
+  const asesores = obtenerAsesores().filter(
+    (asesor) => asesor.estado === 'Activo',
+  )
 
   return `
     <section id="modulo-citas" class="modulo-citas">
+
       <div class="encabezado-modulo">
         <div>
           <h2>Gestión de citas</h2>
@@ -97,28 +102,93 @@ export function crearModuloCitas(): string {
         <input
           id="buscar-cita"
           type="search"
-          placeholder="Buscar por cliente, asesor o estado..."
+          placeholder="Buscar por cliente, asesor, motivo o estado..."
         />
+      </div>
+
+      <div class="resumen-citas">
+        <article>
+          <span>📅</span>
+          <div>
+            <small>Total de citas</small>
+            <strong id="total-citas">
+              ${obtenerCitas().length}
+            </strong>
+          </div>
+        </article>
+
+        <article>
+          <span>⏳</span>
+          <div>
+            <small>Pendientes</small>
+            <strong>
+              ${
+                obtenerCitas().filter(
+                  (cita) => cita.estado === 'Pendiente',
+                ).length
+              }
+            </strong>
+          </div>
+        </article>
+
+        <article>
+          <span>✅</span>
+          <div>
+            <small>Confirmadas</small>
+            <strong>
+              ${
+                obtenerCitas().filter(
+                  (cita) => cita.estado === 'Confirmada',
+                ).length
+              }
+            </strong>
+          </div>
+        </article>
+
+        <article>
+          <span>✔️</span>
+          <div>
+            <small>Finalizadas</small>
+            <strong>
+              ${
+                obtenerCitas().filter(
+                  (cita) => cita.estado === 'Finalizada',
+                ).length
+              }
+            </strong>
+          </div>
+        </article>
       </div>
 
       <div
         id="formulario-cita-contenedor"
         class="formulario-contenedor oculto"
       >
-        <form id="formulario-cita" class="formulario-cita">
+        <form
+          id="formulario-cita"
+          class="formulario-cita"
+        >
+
           <h3 id="titulo-formulario-cita">
             Registrar cita
           </h3>
 
-          <input id="cita-id" type="hidden" />
+          <input
+            id="cita-id"
+            type="hidden"
+          />
 
           <div class="form-grid">
+
             <div class="form-group">
               <label for="cita-cliente">
                 Cliente
               </label>
 
-              <select id="cita-cliente" required>
+              <select
+                id="cita-cliente"
+                required
+              >
                 <option value="">
                   Seleccione un cliente
                 </option>
@@ -126,7 +196,7 @@ export function crearModuloCitas(): string {
                 ${clientes
                   .map(
                     (cliente) => `
-                      <option value="${cliente.id}">
+                      <option value="${escaparHTML(cliente.id)}">
                         ${escaparHTML(cliente.nombre)}
                         ${escaparHTML(cliente.apellido)}
                       </option>
@@ -141,18 +211,18 @@ export function crearModuloCitas(): string {
                 Asesor
               </label>
 
-              <select id="cita-asesor" required>
+              <select
+                id="cita-asesor"
+                required
+              >
                 <option value="">
                   Seleccione un asesor
                 </option>
 
                 ${asesores
-                  .filter(
-                    (asesor) => asesor.estado === 'Activo',
-                  )
                   .map(
                     (asesor) => `
-                      <option value="${asesor.id}">
+                      <option value="${escaparHTML(asesor.id)}">
                         ${escaparHTML(asesor.nombre)}
                         ${escaparHTML(asesor.apellido)}
                       </option>
@@ -195,6 +265,7 @@ export function crearModuloCitas(): string {
                 id="cita-motivo"
                 type="text"
                 placeholder="Ejemplo: Asesoría de marketing"
+                maxlength="150"
                 required
               />
             </div>
@@ -204,7 +275,10 @@ export function crearModuloCitas(): string {
                 Estado
               </label>
 
-              <select id="cita-estado" required>
+              <select
+                id="cita-estado"
+                required
+              >
                 <option value="Pendiente">
                   Pendiente
                 </option>
@@ -222,6 +296,7 @@ export function crearModuloCitas(): string {
                 </option>
               </select>
             </div>
+
           </div>
 
           <p
@@ -230,6 +305,7 @@ export function crearModuloCitas(): string {
           ></p>
 
           <div class="acciones-formulario">
+
             <button
               type="submit"
               class="btn-principal"
@@ -244,12 +320,16 @@ export function crearModuloCitas(): string {
             >
               Cancelar
             </button>
+
           </div>
+
         </form>
       </div>
 
       <div class="tabla-contenedor">
+
         <table class="tabla-datos">
+
           <thead>
             <tr>
               <th>Cliente</th>
@@ -263,8 +343,11 @@ export function crearModuloCitas(): string {
           </thead>
 
           <tbody id="tabla-citas"></tbody>
+
         </table>
+
       </div>
+
     </section>
   `
 }
@@ -345,29 +428,41 @@ export function activarModuloCitas(): void {
       '#mensaje-cita',
     )
 
-  if (!tabla) {
+  if (!tabla || !formulario) {
     return
   }
 
-  const tablaCitas = tabla
-
   function mostrarCitas(filtro = ''): void {
     const citas = obtenerCitas()
-    const texto = filtro.trim().toLowerCase()
 
-    const citasFiltradas = citas.filter((cita) => {
-      return (
-        cita.clienteNombre.toLowerCase().includes(texto) ||
-        cita.asesorNombre.toLowerCase().includes(texto) ||
-        cita.estado.toLowerCase().includes(texto) ||
-        cita.motivo.toLowerCase().includes(texto)
-      )
-    })
+    const texto = filtro
+      .trim()
+      .toLowerCase()
+
+    const citasFiltradas = citas.filter(
+      (cita) =>
+        cita.clienteNombre
+          .toLowerCase()
+          .includes(texto) ||
+        cita.asesorNombre
+          .toLowerCase()
+          .includes(texto) ||
+        cita.estado
+          .toLowerCase()
+          .includes(texto) ||
+        cita.motivo
+          .toLowerCase()
+          .includes(texto) ||
+        cita.fecha.includes(texto),
+    )
 
     if (citasFiltradas.length === 0) {
-      tablaCitas.innerHTML = `
+      tabla.innerHTML = `
         <tr>
-          <td colspan="7" class="tabla-vacia">
+          <td
+            colspan="7"
+            class="tabla-vacia"
+          >
             No hay citas registradas.
           </td>
         </tr>
@@ -376,34 +471,46 @@ export function activarModuloCitas(): void {
       return
     }
 
-    tablaCitas.innerHTML = citasFiltradas
+    tabla.innerHTML = citasFiltradas
       .map(
         (cita) => `
           <tr>
-            <td>${escaparHTML(cita.clienteNombre)}</td>
 
-            <td>${escaparHTML(cita.asesorNombre)}</td>
+            <td>
+              ${escaparHTML(cita.clienteNombre)}
+            </td>
 
-            <td>${formatearFecha(cita.fecha)}</td>
+            <td>
+              ${escaparHTML(cita.asesorNombre)}
+            </td>
 
-            <td>${escaparHTML(cita.hora)}</td>
+            <td>
+              ${formatearFecha(cita.fecha)}
+            </td>
 
-            <td>${escaparHTML(cita.motivo)}</td>
+            <td>
+              ${escaparHTML(cita.hora)}
+            </td>
+
+            <td>
+              ${escaparHTML(cita.motivo)}
+            </td>
 
             <td>
               <span
-                class="estado estado-${cita.estado
-                  .toLowerCase()
-                  .replace(' ', '-')}"
+                class="estado ${obtenerClaseEstado(
+                  cita.estado,
+                )}"
               >
-                ${cita.estado}
+                ${escaparHTML(cita.estado)}
               </span>
             </td>
 
             <td>
+
               <button
                 class="btn-editar"
-                data-editar-cita="${cita.id}"
+                data-editar-cita="${escaparHTML(cita.id)}"
                 type="button"
               >
                 Editar
@@ -411,12 +518,14 @@ export function activarModuloCitas(): void {
 
               <button
                 class="btn-eliminar"
-                data-eliminar-cita="${cita.id}"
+                data-eliminar-cita="${escaparHTML(cita.id)}"
                 type="button"
               >
                 Eliminar
               </button>
+
             </td>
+
           </tr>
         `,
       )
@@ -426,7 +535,7 @@ export function activarModuloCitas(): void {
   }
 
   function limpiarFormulario(): void {
-    formulario?.reset()
+    formulario.reset()
 
     if (inputId) {
       inputId.value = ''
@@ -437,7 +546,8 @@ export function activarModuloCitas(): void {
     }
 
     if (tituloFormulario) {
-      tituloFormulario.textContent = 'Registrar cita'
+      tituloFormulario.textContent =
+        'Registrar cita'
     }
 
     if (mensaje) {
@@ -446,11 +556,16 @@ export function activarModuloCitas(): void {
   }
 
   function abrirFormulario(): void {
-    contenedorFormulario?.classList.remove('oculto')
+    contenedorFormulario?.classList.remove(
+      'oculto',
+    )
   }
 
   function cerrarFormulario(): void {
-    contenedorFormulario?.classList.add('oculto')
+    contenedorFormulario?.classList.add(
+      'oculto',
+    )
+
     limpiarFormulario()
   }
 
@@ -467,7 +582,12 @@ export function activarModuloCitas(): void {
 
     botonesEditar.forEach((boton) => {
       boton.addEventListener('click', () => {
-        const id = boton.dataset.editarCita
+        const id =
+          boton.dataset.editarCita
+
+        if (!id) {
+          return
+        }
 
         const cita = obtenerCitas().find(
           (item) => item.id === id,
@@ -477,22 +597,39 @@ export function activarModuloCitas(): void {
           return
         }
 
-        if (inputId) inputId.value = cita.id
+        if (inputId) {
+          inputId.value = cita.id
+        }
+
         if (inputCliente) {
-          inputCliente.value = cita.clienteId
+          inputCliente.value =
+            cita.clienteId
         }
 
         if (inputAsesor) {
-          inputAsesor.value = cita.asesorId
+          inputAsesor.value =
+            cita.asesorId
         }
 
-        if (inputFecha) inputFecha.value = cita.fecha
-        if (inputHora) inputHora.value = cita.hora
-        if (inputMotivo) inputMotivo.value = cita.motivo
-        if (inputEstado) inputEstado.value = cita.estado
+        if (inputFecha) {
+          inputFecha.value = cita.fecha
+        }
+
+        if (inputHora) {
+          inputHora.value = cita.hora
+        }
+
+        if (inputMotivo) {
+          inputMotivo.value = cita.motivo
+        }
+
+        if (inputEstado) {
+          inputEstado.value = cita.estado
+        }
 
         if (tituloFormulario) {
-          tituloFormulario.textContent = 'Editar cita'
+          tituloFormulario.textContent =
+            'Editar cita'
         }
 
         abrirFormulario()
@@ -501,7 +638,8 @@ export function activarModuloCitas(): void {
 
     botonesEliminar.forEach((boton) => {
       boton.addEventListener('click', () => {
-        const id = boton.dataset.eliminarCita
+        const id =
+          boton.dataset.eliminarCita
 
         if (!id) {
           return
@@ -515,194 +653,359 @@ export function activarModuloCitas(): void {
           return
         }
 
-        const citasActualizadas = obtenerCitas().filter(
-          (cita) => cita.id !== id,
-        )
+        const citasActualizadas =
+          obtenerCitas().filter(
+            (cita) => cita.id !== id,
+          )
 
         guardarCitas(citasActualizadas)
-        mostrarCitas(buscador?.value ?? '')
-        actualizarTotalCitas(citasActualizadas.length)
+
+        crearNotificacion(
+          'Cita eliminada',
+          'Una cita fue eliminada del sistema.',
+          'cita',
+        )
+
+        mostrarCitas(
+          buscador?.value ?? '',
+        )
+
+        actualizarResumenCitas()
       })
     })
   }
 
-  botonNuevaCita?.addEventListener('click', () => {
-    const clientes = obtenerClientes()
-    const asesores = obtenerAsesores().filter(
-      (asesor) => asesor.estado === 'Activo',
-    )
+  botonNuevaCita?.addEventListener(
+    'click',
+    () => {
+      const clientes =
+        obtenerClientes()
 
-    if (clientes.length === 0) {
-      window.alert(
-        'Primero debes registrar un cliente.',
+      const asesores =
+        obtenerAsesores().filter(
+          (asesor) =>
+            asesor.estado === 'Activo',
+        )
+
+      if (clientes.length === 0) {
+        window.alert(
+          'Primero debes registrar un cliente.',
+        )
+
+        return
+      }
+
+      if (asesores.length === 0) {
+        window.alert(
+          'Primero debes registrar un asesor activo.',
+        )
+
+        return
+      }
+
+      limpiarFormulario()
+
+      establecerFechaMinima()
+
+      abrirFormulario()
+    },
+  )
+
+  botonCancelar?.addEventListener(
+    'click',
+    () => {
+      cerrarFormulario()
+    },
+  )
+
+  buscador?.addEventListener(
+    'input',
+    () => {
+      mostrarCitas(
+        buscador.value,
       )
+    },
+  )
 
-      return
-    }
+  formulario.addEventListener(
+    'submit',
+    (evento) => {
+      evento.preventDefault()
 
-    if (asesores.length === 0) {
-      window.alert(
-        'Primero debes registrar un asesor activo.',
+      const clienteId =
+        inputCliente?.value ?? ''
+
+      const asesorId =
+        inputAsesor?.value ?? ''
+
+      const fecha =
+        inputFecha?.value ?? ''
+
+      const hora =
+        inputHora?.value ?? ''
+
+      const motivo =
+        inputMotivo?.value.trim() ?? ''
+
+      const estado =
+        inputEstado?.value as Cita['estado']
+
+      const idActual =
+        inputId?.value ?? ''
+
+      if (
+        !clienteId ||
+        !asesorId ||
+        !fecha ||
+        !hora ||
+        !motivo
+      ) {
+        if (mensaje) {
+          mensaje.textContent =
+            'Por favor, completa todos los campos.'
+        }
+
+        return
+      }
+
+      if (!esFechaValida(fecha)) {
+        if (mensaje) {
+          mensaje.textContent =
+            'La fecha seleccionada no puede ser anterior a hoy.'
+        }
+
+        return
+      }
+
+      const cliente =
+        obtenerClientes().find(
+          (item) =>
+            item.id === clienteId,
+        )
+
+      const asesor =
+        obtenerAsesores().find(
+          (item) =>
+            item.id === asesorId,
+        )
+
+      if (!cliente || !asesor) {
+        if (mensaje) {
+          mensaje.textContent =
+            'No se encontró el cliente o asesor seleccionado.'
+        }
+
+        return
+      }
+
+      const citas =
+        obtenerCitas()
+
+      const citaRepetida =
+        citas.some(
+          (cita) =>
+            cita.asesorId ===
+              asesorId &&
+            cita.fecha === fecha &&
+            cita.hora === hora &&
+            cita.id !== idActual &&
+            cita.estado !==
+              'Cancelada',
+        )
+
+      if (citaRepetida) {
+        if (mensaje) {
+          mensaje.textContent =
+            'El asesor ya tiene una cita en esa fecha y hora.'
+        }
+
+        return
+      }
+
+      const clienteNombre =
+        `${cliente.nombre} ${cliente.apellido}`
+
+      const asesorNombre =
+        `${asesor.nombre} ${asesor.apellido}`
+
+      if (idActual) {
+        const citasActualizadas =
+          citas.map((cita) =>
+            cita.id === idActual
+              ? {
+                  ...cita,
+                  clienteId,
+                  clienteNombre,
+                  asesorId,
+                  asesorNombre,
+                  fecha,
+                  hora,
+                  motivo,
+                  estado,
+                }
+              : cita,
+          )
+
+        guardarCitas(
+          citasActualizadas,
+        )
+
+        crearNotificacion(
+          'Cita actualizada',
+          `La cita de ${clienteNombre} fue actualizada.`,
+          'cita',
+        )
+      } else {
+        const nuevaCita: Cita = {
+          id: crypto.randomUUID(),
+          clienteId,
+          clienteNombre,
+          asesorId,
+          asesorNombre,
+          fecha,
+          hora,
+          motivo,
+          estado,
+        }
+
+        guardarCitas([
+          ...citas,
+          nuevaCita,
+        ])
+
+        crearNotificacion(
+          'Nueva cita registrada',
+          `${clienteNombre} tiene una cita con ${asesorNombre} el ${formatearFecha(fecha)} a las ${hora}.`,
+          'cita',
+        )
+      }
+
+      actualizarResumenCitas()
+
+      cerrarFormulario()
+
+      mostrarCitas(
+        buscador?.value ?? '',
       )
+    },
+  )
 
-      return
-    }
-
-    limpiarFormulario()
-    abrirFormulario()
-  })
-
-  botonCancelar?.addEventListener('click', () => {
-    cerrarFormulario()
-  })
-
-  buscador?.addEventListener('input', () => {
-    mostrarCitas(buscador.value)
-  })
-
-  formulario?.addEventListener('submit', (evento) => {
-    evento.preventDefault()
-
-    const clienteId = inputCliente?.value ?? ''
-    const asesorId = inputAsesor?.value ?? ''
-    const fecha = inputFecha?.value ?? ''
-    const hora = inputHora?.value ?? ''
-    const motivo = inputMotivo?.value.trim() ?? ''
-
-    const estado =
-      inputEstado?.value as Cita['estado']
-
-    const idActual = inputId?.value ?? ''
-
-    if (
-      !clienteId ||
-      !asesorId ||
-      !fecha ||
-      !hora ||
-      !motivo
-    ) {
-      if (mensaje) {
-        mensaje.textContent =
-          'Por favor, completa todos los campos.'
-      }
-
-      return
-    }
-
-    const cliente = obtenerClientes().find(
-      (item) => item.id === clienteId,
-    )
-
-    const asesor = obtenerAsesores().find(
-      (item) => item.id === asesorId,
-    )
-
-    if (!cliente || !asesor) {
-      if (mensaje) {
-        mensaje.textContent =
-          'No se encontró el cliente o asesor seleccionado.'
-      }
-
-      return
-    }
-
-    const citas = obtenerCitas()
-
-    const citaRepetida = citas.some(
-      (cita) =>
-        cita.asesorId === asesorId &&
-        cita.fecha === fecha &&
-        cita.hora === hora &&
-        cita.id !== idActual &&
-        cita.estado !== 'Cancelada',
-    )
-
-    if (citaRepetida) {
-      if (mensaje) {
-        mensaje.textContent =
-          'El asesor ya tiene una cita en esa fecha y hora.'
-      }
-
-      return
-    }
-
-    const clienteNombre =
-      `${cliente.nombre} ${cliente.apellido}`
-
-    const asesorNombre =
-      `${asesor.nombre} ${asesor.apellido}`
-
-    if (idActual) {
-      const citasActualizadas = citas.map((cita) =>
-        cita.id === idActual
-          ? {
-              ...cita,
-              clienteId,
-              clienteNombre,
-              asesorId,
-              asesorNombre,
-              fecha,
-              hora,
-              motivo,
-              estado,
-            }
-          : cita,
-      )
-
-      guardarCitas(citasActualizadas)
-    } else {
-      const nuevaCita: Cita = {
-        id: crypto.randomUUID(),
-        clienteId,
-        clienteNombre,
-        asesorId,
-        asesorNombre,
-        fecha,
-        hora,
-        motivo,
-        estado,
-      }
-
-      guardarCitas([...citas, nuevaCita])
-    }
-
-    const total = obtenerCitas().length
-
-    actualizarTotalCitas(total)
-    cerrarFormulario()
-    mostrarCitas(buscador?.value ?? '')
-  })
+  establecerFechaMinima()
 
   mostrarCitas()
 }
 
-function actualizarTotalCitas(total: number): void {
-  const elemento =
+function actualizarResumenCitas(): void {
+  const citas = obtenerCitas()
+
+  const total =
     document.querySelector<HTMLElement>(
       '#total-citas',
     )
 
-  if (elemento) {
-    elemento.textContent = String(total)
+  if (total) {
+    total.textContent =
+      String(citas.length)
   }
 }
 
-function formatearFecha(fecha: string): string {
-  const partes = fecha.split('-')
+function establecerFechaMinima(): void {
+  const input =
+    document.querySelector<HTMLInputElement>(
+      '#cita-fecha',
+    )
+
+  if (!input) {
+    return
+  }
+
+  const hoy = new Date()
+
+  const anio =
+    hoy.getFullYear()
+
+  const mes =
+    String(
+      hoy.getMonth() + 1,
+    ).padStart(2, '0')
+
+  const dia =
+    String(
+      hoy.getDate(),
+    ).padStart(2, '0')
+
+  input.min =
+    `${anio}-${mes}-${dia}`
+}
+
+function esFechaValida(
+  fecha: string,
+): boolean {
+  const seleccionada =
+    new Date(
+      `${fecha}T00:00:00`,
+    )
+
+  const hoy = new Date()
+
+  hoy.setHours(
+    0,
+    0,
+    0,
+    0,
+  )
+
+  return seleccionada >= hoy
+}
+
+function formatearFecha(
+  fecha: string,
+): string {
+  const partes =
+    fecha.split('-')
 
   if (partes.length !== 3) {
     return fecha
   }
 
-  const [anio, mes, dia] = partes
+  const [
+    anio,
+    mes,
+    dia,
+  ] = partes
 
   return `${dia}/${mes}/${anio}`
 }
 
-function escaparHTML(texto: string): string {
-  const elemento = document.createElement('div')
+function obtenerClaseEstado(
+  estado: Cita['estado'],
+): string {
+  return `estado-${estado
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(
+      /[\u0300-\u036f]/g,
+      '',
+    )
+    .replace(
+      /[^a-z0-9]+/g,
+      '-',
+    )
+    .replace(
+      /^-+|-+$/g,
+      '')}`
+}
 
-  elemento.textContent = texto
+function escaparHTML(
+  texto: string,
+): string {
+  const elemento =
+    document.createElement(
+      'div',
+    )
+
+  elemento.textContent =
+    texto
 
   return elemento.innerHTML
 }

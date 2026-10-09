@@ -1,509 +1,570 @@
-import { mostrarDashboardAdmin } from './DashboardAdmin'
-import { mostrarDashboardCliente } from './DashboardCliente'
-import { mostrarRegistro } from './Register'
+import "../styles/login.css";
 
-const API_URL = 'http://localhost:3002'
-
-type UsuarioLogin = {
-  id: string
-  nombre: string
-  apellido: string
-  correo: string
-  telefono: string
-  rol: string
-  foto: string
-}
-
-type RespuestaLogin = {
-  mensaje: string
-  token?: string
-  usuario?: UsuarioLogin
-}
-
-export function mostrarLogin(app: HTMLDivElement): void {
+export function mostrarLogin(app: HTMLElement) {
   app.innerHTML = `
-    <main class="login-page">
-      <section class="login-card">
+    <div class="login-page">
+      <div class="login-container">
 
-        <div class="login-brand">
-          <h1>Karsan Digital</h1>
-          <p>CRM de gestión de clientes</p>
-        </div>
+        <!-- PARTE IZQUIERDA -->
+        <section class="login-info">
 
-        <form id="login-form" class="login-form">
+          <div class="login-brand">
+            <div class="brand-icon">K</div>
 
-          <div class="form-group">
-            <label for="correo">
-              Correo electrónico
-            </label>
-
-            <input
-              id="correo"
-              name="correo"
-              type="email"
-              placeholder="ejemplo@correo.com"
-              autocomplete="email"
-              required
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="contrasena">
-              Contraseña
-            </label>
-
-            <div class="password-field">
-              <input
-                id="contrasena"
-                name="contrasena"
-                type="password"
-                placeholder="Ingrese su contraseña"
-                autocomplete="current-password"
-                required
-              />
-
-              <button
-                id="mostrar-contrasena"
-                class="btn-ver-contrasena"
-                type="button"
-                aria-label="Mostrar contraseña"
-              >
-                👁️
-              </button>
+            <div class="brand-text">
+              <h1>KARSAN</h1>
+              <span>DIGITAL</span>
             </div>
           </div>
 
-          <div class="login-opciones">
+          <div class="login-info-content">
 
-            <label class="recordarme">
-              <input
-                id="recordarme"
-                type="checkbox"
-              />
-              Recordarme
-            </label>
+            <span class="welcome-small">BIENVENIDO</span>
 
-            <button
-              id="olvide-contrasena"
-              class="btn-link"
-              type="button"
-            >
-              ¿Olvidaste tu contraseña?
-            </button>
+            <h2>
+              Gestiona tu negocio,
+              <span>hazlo crecer.</span>
+            </h2>
+
+            <p class="login-description">
+              KARSAN Digital te brinda las herramientas necesarias
+              para organizar, gestionar y hacer crecer tu negocio
+              desde un solo lugar.
+            </p>
+
+            <div class="login-features">
+
+              <div class="login-feature">
+                <div class="feature-icon">👥</div>
+                <div>
+                  <strong>Clientes</strong>
+                  <span>
+                    Organiza y gestiona toda tu base de clientes.
+                  </span>
+                </div>
+              </div>
+
+              <div class="login-feature">
+                <div class="feature-icon">📈</div>
+                <div>
+                  <strong>Ventas</strong>
+                  <span>
+                    Da seguimiento a cada oportunidad.
+                  </span>
+                </div>
+              </div>
+
+              <div class="login-feature">
+                <div class="feature-icon">⚙</div>
+                <div>
+                  <strong>Productividad</strong>
+                  <span>
+                    Optimiza tu tiempo y el trabajo de tu equipo.
+                  </span>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="login-preview">
+
+              <div class="preview-laptop">
+
+                <div class="preview-top">
+                  <span class="preview-logo">K</span>
+                  <span>KARSAN</span>
+
+                  <div class="preview-dots">
+                    ● ● ●
+                  </div>
+                </div>
+
+                <div class="preview-body">
+
+                  <aside class="preview-sidebar">
+
+                    <div class="preview-menu active">
+                      Inicio
+                    </div>
+
+                    <div class="preview-menu">
+                      Clientes
+                    </div>
+
+                    <div class="preview-menu">
+                      Empresas
+                    </div>
+
+                    <div class="preview-menu">
+                      Proyectos
+                    </div>
+
+                    <div class="preview-menu">
+                      Marketing
+                    </div>
+
+                  </aside>
+
+                  <div class="preview-content">
+
+                    <h4>Bienvenido</h4>
+
+                    <div class="preview-cards">
+
+                      <div>
+                        <small>Clientes</small>
+                        <strong>128</strong>
+                      </div>
+
+                      <div>
+                        <small>Proyectos</small>
+                        <strong>24</strong>
+                      </div>
+
+                      <div>
+                        <small>Ventas</small>
+                        <strong>$12,450</strong>
+                      </div>
+
+                    </div>
+
+                    <div class="preview-chart">
+                      <div class="chart-line"></div>
+                      <div class="chart-line"></div>
+                      <div class="chart-line"></div>
+                    </div>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+              <div class="preview-phone">
+
+                <div class="phone-top">
+                  KARSAN
+                </div>
+
+                <strong>Resumen</strong>
+
+                <div class="phone-item">
+                  Clientes
+                  <b>128</b>
+                </div>
+
+                <div class="phone-item">
+                  Proyectos
+                  <b>24</b>
+                </div>
+
+                <div class="phone-item">
+                  Ventas
+                  <b>$12,450</b>
+                </div>
+
+              </div>
+
+            </div>
 
           </div>
 
-          <p
-            id="mensaje-login"
-            class="mensaje-login"
-          ></p>
+          <div class="login-footer">
+            © 2026 Karsan Digital
+          </div>
 
-          <button
-            id="btn-iniciar-sesion"
-            type="submit"
-            class="btn-login"
-          >
-            Iniciar sesión
-          </button>
+        </section>
 
-        </form>
+        <!-- FORMULARIO -->
+        <section class="login-form-section">
 
-        <button
-          id="btn-registro"
-          class="btn-registro"
-          type="button"
-        >
-          Crear una cuenta
-        </button>
+          <div class="login-card">
 
-      </section>
-    </main>
-  `
+            <div class="mobile-logo">
 
-  activarLogin(app)
-}
+              <div class="brand-icon">
+                K
+              </div>
 
-function activarLogin(app: HTMLDivElement): void {
-  const formulario =
-    document.querySelector<HTMLFormElement>(
-      '#login-form',
-    )
+              <div>
+                <strong>KARSAN</strong>
+                <span>DIGITAL</span>
+              </div>
 
-  const mensaje =
-    document.querySelector<HTMLParagraphElement>(
-      '#mensaje-login',
-    )
+            </div>
 
-  const botonRegistro =
-    document.querySelector<HTMLButtonElement>(
-      '#btn-registro',
-    )
+            <div class="login-title">
 
-  const botonMostrarContrasena =
-    document.querySelector<HTMLButtonElement>(
-      '#mostrar-contrasena',
-    )
+              <h2>
+                Iniciar sesión
+              </h2>
 
-  const botonOlvideContrasena =
-    document.querySelector<HTMLButtonElement>(
-      '#olvide-contrasena',
-    )
+              <p>
+                Ingresa a tu cuenta para continuar
+              </p>
 
-  const botonIniciarSesion =
-    document.querySelector<HTMLButtonElement>(
-      '#btn-iniciar-sesion',
-    )
+            </div>
 
-  const campoCorreo =
-    document.querySelector<HTMLInputElement>(
-      '#correo',
-    )
+            <form
+              id="loginForm"
+              class="login-form"
+            >
 
-  const correoRecordado =
-    localStorage.getItem('correoRecordado')
+              <div class="form-group">
 
-  if (correoRecordado && campoCorreo) {
-    campoCorreo.value = correoRecordado
-  }
+                <label for="email">
+                  Correo electrónico
+                </label>
 
-  botonMostrarContrasena?.addEventListener(
-    'click',
+                <div class="input-wrapper">
+
+                  <span class="input-icon">
+                    ✉
+                  </span>
+
+                  <input
+                    id="email"
+                    type="email"
+                    placeholder="ejemplo@correo.com"
+                    autocomplete="email"
+                    required
+                  />
+
+                </div>
+
+              </div>
+
+              <div class="form-group">
+
+                <label for="password">
+                  Contraseña
+                </label>
+
+                <div class="input-wrapper">
+
+                  <span class="input-icon">
+                    🔒
+                  </span>
+
+                  <input
+                    id="password"
+                    type="password"
+                    placeholder="Ingresa tu contraseña"
+                    autocomplete="current-password"
+                    required
+                  />
+
+                  <button
+                    type="button"
+                    id="togglePassword"
+                    class="password-toggle"
+                    aria-label="Mostrar contraseña"
+                  >
+                    Mostrar
+                  </button>
+
+                </div>
+
+              </div>
+
+              <div class="login-options">
+
+                <label class="remember-me">
+
+                  <input
+                    type="checkbox"
+                    id="remember"
+                  />
+
+                  <span>
+                    Recordarme
+                  </span>
+
+                </label>
+
+                <button
+                  type="button"
+                  id="forgotPassword"
+                  class="forgot-password"
+                >
+                  ¿Olvidaste tu contraseña?
+                </button>
+
+              </div>
+
+              <div
+                id="loginMessage"
+                class="login-message"
+              ></div>
+
+              <button
+                type="submit"
+                class="login-button"
+              >
+
+                <span>
+                  Iniciar sesión
+                </span>
+
+                <span class="button-arrow">
+                  →
+                </span>
+
+              </button>
+
+            </form>
+
+            <div class="login-security">
+
+              <span class="security-icon">
+                ✓
+              </span>
+
+              <div>
+
+                <strong>
+                  Tu información está protegida
+                </strong>
+
+                <small>
+                  Utilizamos medidas de seguridad para proteger tus datos.
+                </small>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+      </div>
+    </div>
+  `;
+
+  // ============================================================
+  // ELEMENTOS
+  // ============================================================
+
+  const loginForm =
+    document.getElementById(
+      "loginForm",
+    ) as HTMLFormElement;
+
+  const emailInput =
+    document.getElementById(
+      "email",
+    ) as HTMLInputElement;
+
+  const passwordInput =
+    document.getElementById(
+      "password",
+    ) as HTMLInputElement;
+
+  const togglePassword =
+    document.getElementById(
+      "togglePassword",
+    ) as HTMLButtonElement;
+
+  const loginMessage =
+    document.getElementById(
+      "loginMessage",
+    ) as HTMLDivElement;
+
+  const forgotPassword =
+    document.getElementById(
+      "forgotPassword",
+    ) as HTMLButtonElement;
+
+  // ============================================================
+  // MOSTRAR / OCULTAR CONTRASEÑA
+  // ============================================================
+
+  togglePassword.addEventListener(
+    "click",
     () => {
-      const campo =
-        document.querySelector<HTMLInputElement>(
-          '#contrasena',
-        )
-
-      if (!campo) {
-        return
-      }
-
-      if (campo.type === 'password') {
-        campo.type = 'text'
-        botonMostrarContrasena.textContent = '🙈'
+      if (
+        passwordInput.type ===
+        "password"
+      ) {
+        passwordInput.type = "text";
+        togglePassword.textContent =
+          "Ocultar";
       } else {
-        campo.type = 'password'
-        botonMostrarContrasena.textContent = '👁️'
+        passwordInput.type = "password";
+        togglePassword.textContent =
+          "Mostrar";
       }
     },
-  )
+  );
 
-  formulario?.addEventListener(
-    'submit',
-    async (evento) => {
-      evento.preventDefault()
+  // ============================================================
+  // LOGIN REAL
+  // ============================================================
 
-      const correo =
-        document
-          .querySelector<HTMLInputElement>(
-            '#correo',
-          )
-          ?.value
+  loginForm.addEventListener(
+    "submit",
+    async (event) => {
+      event.preventDefault();
+
+      const email =
+        emailInput.value
           .trim()
-          .toLowerCase() ?? ''
+          .toLowerCase();
 
-      const contrasena =
-        document
-          .querySelector<HTMLInputElement>(
-            '#contrasena',
-          )
-          ?.value ?? ''
+      const password =
+        passwordInput.value;
 
-      const recordar =
-        document.querySelector<HTMLInputElement>(
-          '#recordarme',
-        )?.checked ?? false
-
-      if (!correo || !contrasena) {
+      if (!email || !password) {
         mostrarMensaje(
-          mensaje,
-          'Completa el correo y la contraseña.',
-          false,
-        )
+          "Completa todos los campos para iniciar sesión.",
+          "error",
+        );
 
-        return
+        return;
       }
 
-      botonIniciarSesion?.setAttribute(
-        'disabled',
-        'true',
-      )
+      const boton =
+        loginForm.querySelector(
+          ".login-button",
+        ) as HTMLButtonElement;
 
-      if (botonIniciarSesion) {
-        botonIniciarSesion.textContent =
-          'Iniciando sesión...'
-      }
+      boton.disabled = true;
 
       mostrarMensaje(
-        mensaje,
-        'Verificando datos...',
-        true,
-      )
+        "Verificando tus datos...",
+        "info",
+      );
 
       try {
-        const respuesta = await fetch(
-          `${API_URL}/api/auth/login`,
-          {
-            method: 'POST',
+        const respuesta =
+          await fetch(
+            "http://localhost:3002/api/auth/login",
+            {
+              method: "POST",
 
-            headers: {
-              'Content-Type':
-                'application/json',
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+
+              body: JSON.stringify({
+                correo: email,
+                contrasena: password,
+              }),
             },
-
-            body: JSON.stringify({
-              correo,
-              contrasena,
-            }),
-          },
-        )
+          );
 
         const datos =
-          (await respuesta.json()) as RespuestaLogin
+          await respuesta.json();
 
-        if (
-          !respuesta.ok ||
-          !datos.usuario ||
-          !datos.token
-        ) {
+        // ==========================================
+        // CONTRASEÑA O CORREO INCORRECTOS
+        // ==========================================
+
+        if (!respuesta.ok) {
           mostrarMensaje(
-            mensaje,
             datos.mensaje ||
-              'Correo o contraseña incorrectos.',
-            false,
-          )
+              "Correo o contraseña incorrectos.",
+            "error",
+          );
 
-          return
+          boton.disabled = false;
+
+          return;
         }
 
+        // ==========================================
+        // GUARDAR SESIÓN
+        // ==========================================
+
         localStorage.setItem(
-          'token',
+          "karsan_token",
           datos.token,
-        )
+        );
 
         localStorage.setItem(
-          'usuarioActivo',
-          JSON.stringify(datos.usuario),
-        )
+          "karsan_usuario",
+          JSON.stringify(
+            datos.usuario,
+          ),
+        );
 
-        if (recordar) {
-          localStorage.setItem(
-            'correoRecordado',
-            correo,
-          )
+        // ==========================================
+        // REDIRIGIR SEGÚN EL ROL REAL
+        // ==========================================
+
+        if (
+          datos.usuario.rol
+            .toUpperCase() ===
+          "ADMINISTRADOR"
+        ) {
+          const modulo =
+            await import(
+              "./DashboardAdmin"
+            );
+
+          modulo.mostrarDashboardAdmin(
+            app,
+          );
         } else {
-          localStorage.removeItem(
-            'correoRecordado',
-          )
+          const modulo =
+            await import(
+              "./DashboardCliente"
+            );
+
+          modulo.mostrarDashboardCliente(
+            app,
+            datos.usuario.correo,
+          );
         }
 
-        if (
-          datos.usuario.rol ===
-          'administrador'
-        ) {
-          mostrarDashboardAdmin(app)
-          return
-        }
-
-        if (
-          datos.usuario.rol ===
-          'cliente'
-        ) {
-          mostrarDashboardCliente(app)
-          return
-        }
-
-        if (
-          datos.usuario.rol ===
-          'asesor'
-        ) {
-          mostrarMensaje(
-            mensaje,
-            'El panel del asesor todavía está en desarrollo.',
-            false,
-          )
-
-          return
-        }
-
-        mostrarMensaje(
-          mensaje,
-          'El usuario tiene un rol no reconocido.',
-          false,
-        )
       } catch (error) {
-        console.error(error)
+        console.error(
+          "Error de login:",
+          error,
+        );
 
         mostrarMensaje(
-          mensaje,
-          'No se pudo conectar con el servidor. Verifica que el backend esté encendido en el puerto 3002.',
-          false,
-        )
+          "No se pudo conectar con el servidor. Verifica que el backend esté ejecutándose.",
+          "error",
+        );
+
       } finally {
-        botonIniciarSesion?.removeAttribute(
-          'disabled',
-        )
-
-        if (botonIniciarSesion) {
-          botonIniciarSesion.textContent =
-            'Iniciar sesión'
-        }
+        boton.disabled = false;
       }
     },
-  )
+  );
 
-  botonRegistro?.addEventListener(
-    'click',
+  // ============================================================
+  // RECUPERAR CONTRASEÑA
+  // ============================================================
+
+  forgotPassword.addEventListener(
+    "click",
     () => {
-      mostrarRegistro(app)
-    },
-  )
-
-  botonOlvideContrasena?.addEventListener(
-    'click',
-    () => {
-      mostrarRecuperacionTemporal(app)
-    },
-  )
-}
-
-function mostrarRecuperacionTemporal(
-  app: HTMLDivElement,
-): void {
-  app.innerHTML = `
-    <main class="login-page">
-
-      <section class="login-card">
-
-        <div class="login-brand">
-          <h1>Recuperar contraseña</h1>
-
-          <p>
-            Ingresa tu correo electrónico
-          </p>
-        </div>
-
-        <form
-          id="form-recuperacion"
-          class="login-form"
-        >
-
-          <div class="form-group">
-
-            <label for="correo-recuperacion">
-              Correo electrónico
-            </label>
-
-            <input
-              id="correo-recuperacion"
-              type="email"
-              placeholder="ejemplo@correo.com"
-              required
-            />
-
-          </div>
-
-          <p
-            id="mensaje-recuperacion"
-            class="mensaje-login"
-          ></p>
-
-          <button
-            class="btn-login"
-            type="submit"
-          >
-            Enviar código
-          </button>
-
-        </form>
-
-        <button
-          id="volver-login"
-          class="btn-registro"
-          type="button"
-        >
-          ← Volver al inicio de sesión
-        </button>
-
-      </section>
-
-    </main>
-  `
-
-  const formulario =
-    document.querySelector<HTMLFormElement>(
-      '#form-recuperacion',
-    )
-
-  const mensaje =
-    document.querySelector<HTMLParagraphElement>(
-      '#mensaje-recuperacion',
-    )
-
-  formulario?.addEventListener(
-    'submit',
-    (evento) => {
-      evento.preventDefault()
-
-      const correo =
-        document
-          .querySelector<HTMLInputElement>(
-            '#correo-recuperacion',
-          )
-          ?.value
-          .trim()
-          .toLowerCase() ?? ''
-
-      if (!correo) {
-        mostrarMensaje(
-          mensaje,
-          'Ingresa tu correo electrónico.',
-          false,
-        )
-
-        return
-      }
-
       mostrarMensaje(
-        mensaje,
-        'La recuperación por correo será conectada en el siguiente paso.',
-        true,
-      )
+        "Para recuperar tu contraseña, contacta con el administrador.",
+        "info",
+      );
     },
-  )
+  );
 
-  document
-    .querySelector<HTMLButtonElement>(
-      '#volver-login',
-    )
-    ?.addEventListener(
-      'click',
-      () => {
-        mostrarLogin(app)
-      },
-    )
-}
+  // ============================================================
+  // MOSTRAR MENSAJE
+  // ============================================================
 
-function mostrarMensaje(
-  elemento:
-    | HTMLParagraphElement
-    | null,
-  texto: string,
-  exito: boolean,
-): void {
-  if (!elemento) {
-    return
+  function mostrarMensaje(
+    mensaje: string,
+    tipo:
+      | "error"
+      | "success"
+      | "info",
+  ) {
+    loginMessage.textContent =
+      mensaje;
+
+    loginMessage.className =
+      `login-message ${tipo}`;
   }
-
-  elemento.textContent = texto
-
-  elemento.classList.toggle(
-    'mensaje-exito',
-    exito,
-  )
-
-  elemento.classList.toggle(
-    'mensaje-error',
-    !exito,
-  )
 }

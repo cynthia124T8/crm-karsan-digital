@@ -1,9 +1,13 @@
 type Cliente = {
   id: string
   nombre: string
-  apellido: string
+  apellido?: string
   correo: string
   telefono: string
+  ciudad?: string
+  servicio?: string
+  estado?: string
+  fechaRegistro?: string
 }
 
 type Lead = {
@@ -12,14 +16,21 @@ type Lead = {
   apellido?: string
   correo: string
   telefono: string
-  fuente: string
+  fuente?: string
   estado: string
+  marca?: string
+  interes?: string
+  asesor?: string
+  fecha?: string
 }
 
 type Asesor = {
   id: string
   nombre: string
   apellido: string
+  correo?: string
+  telefono?: string
+  especialidad?: string
   estado: string
 }
 
@@ -39,7 +50,8 @@ type Notificacion = {
   mensaje: string
   tipo: string
   leida: boolean
-  fechaCreacion: string
+  fechaCreacion?: string
+  fecha?: string
 }
 
 export function crearModuloReportes(): string {
@@ -54,37 +66,63 @@ export function crearModuloReportes(): string {
     (asesor) => asesor.estado === 'Activo',
   ).length
 
-  const citasPendientes = citas.filter(
-    (cita) => cita.estado === 'Pendiente',
-  ).length
+  const citasPendientes = contarEstados(
+    citas,
+    ['Pendiente'],
+  )
 
-  const citasConfirmadas = citas.filter(
-    (cita) => cita.estado === 'Confirmada',
-  ).length
+  const citasConfirmadas = contarEstados(
+    citas,
+    ['Confirmada'],
+  )
 
-  const citasFinalizadas = citas.filter(
-    (cita) => cita.estado === 'Finalizada',
-  ).length
+  const citasFinalizadas = contarEstados(
+    citas,
+    ['Finalizada'],
+  )
 
-  const citasCanceladas = citas.filter(
-    (cita) => cita.estado === 'Cancelada',
-  ).length
+  const citasCanceladas = contarEstados(
+    citas,
+    ['Cancelada'],
+  )
 
-  const leadsNuevos = leads.filter(
-    (lead) => lead.estado === 'Nuevo',
-  ).length
+  const leadsNuevos = contarEstados(
+    leads,
+    ['Nuevo', 'Prospecto captado'],
+  )
 
-  const leadsContactados = leads.filter(
-    (lead) => lead.estado === 'Contactado',
-  ).length
+  const leadsContactados = contarEstados(
+    leads,
+    ['Contactado'],
+  )
 
-  const leadsConvertidos = leads.filter(
-    (lead) => lead.estado === 'Convertido',
-  ).length
+  const leadsSeguimiento = contarEstados(
+    leads,
+    ['En seguimiento'],
+  )
 
-  const notificacionesNoLeidas = notificaciones.filter(
-    (notificacion) => !notificacion.leida,
-  ).length
+  const leadsCotizacion = contarEstados(
+    leads,
+    ['Cotización enviada'],
+  )
+
+  const leadsConvertidos = contarEstados(
+    leads,
+    [
+      'Convertido',
+      'Matriculado / Venta cerrada',
+    ],
+  )
+
+  const leadsPerdidos = contarEstados(
+    leads,
+    ['Perdido'],
+  )
+
+  const notificacionesNoLeidas =
+    notificaciones.filter(
+      (notificacion) => !notificacion.leida,
+    ).length
 
   const maximoGeneral = Math.max(
     clientes.length,
@@ -96,6 +134,7 @@ export function crearModuloReportes(): string {
 
   return `
     <section id="modulo-reportes" class="modulo-reportes">
+
       <div class="encabezado-modulo">
         <div>
           <h2>Reportes y estadísticas</h2>
@@ -125,6 +164,7 @@ export function crearModuloReportes(): string {
       </div>
 
       <div class="reportes-tarjetas">
+
         ${crearTarjetaReporte(
           'Clientes',
           clientes.length,
@@ -164,16 +204,23 @@ export function crearModuloReportes(): string {
           '🔔',
           'rojo',
         )}
+
       </div>
 
       <div class="reportes-grid">
+
         <article class="reporte-panel reporte-panel-amplio">
+
           <div class="reporte-panel-titulo">
             <div>
               <span class="reporte-panel-icono">📈</span>
+
               <div>
                 <h3>Resumen general</h3>
-                <p>Comparación de los principales registros del CRM.</p>
+
+                <p>
+                  Comparación de los principales registros del CRM.
+                </p>
               </div>
             </div>
           </div>
@@ -201,15 +248,21 @@ export function crearModuloReportes(): string {
             citas.length,
             maximoGeneral,
           )}
+
         </article>
 
         <article class="reporte-panel">
+
           <div class="reporte-panel-titulo">
             <div>
               <span class="reporte-panel-icono">📅</span>
+
               <div>
                 <h3>Estado de las citas</h3>
-                <p>Distribución actual de las citas.</p>
+
+                <p>
+                  Distribución actual de las citas.
+                </p>
               </div>
             </div>
           </div>
@@ -233,15 +286,21 @@ export function crearModuloReportes(): string {
             'Canceladas',
             citasCanceladas,
           )}
+
         </article>
 
         <article class="reporte-panel">
+
           <div class="reporte-panel-titulo">
             <div>
               <span class="reporte-panel-icono">🎯</span>
+
               <div>
                 <h3>Estado de los leads</h3>
-                <p>Avance de los clientes potenciales.</p>
+
+                <p>
+                  Avance de los clientes potenciales.
+                </p>
               </div>
             </div>
           </div>
@@ -257,18 +316,39 @@ export function crearModuloReportes(): string {
           )}
 
           ${crearFilaEstado(
-            'Convertidos',
+            'En seguimiento',
+            leadsSeguimiento,
+          )}
+
+          ${crearFilaEstado(
+            'Cotización enviada',
+            leadsCotizacion,
+          )}
+
+          ${crearFilaEstado(
+            'Convertidos / Ventas',
             leadsConvertidos,
           )}
+
+          ${crearFilaEstado(
+            'Perdidos',
+            leadsPerdidos,
+          )}
+
         </article>
 
         <article class="reporte-panel">
+
           <div class="reporte-panel-titulo">
             <div>
               <span class="reporte-panel-icono">⚡</span>
+
               <div>
                 <h3>Actividad del sistema</h3>
-                <p>Información relevante del CRM.</p>
+
+                <p>
+                  Información relevante del CRM.
+                </p>
               </div>
             </div>
           </div>
@@ -287,20 +367,33 @@ export function crearModuloReportes(): string {
             'Sin leer',
             notificacionesNoLeidas,
           )}
+
         </article>
+
       </div>
 
       <div class="reporte-tabla-contenedor">
+
         <div class="reporte-tabla-encabezado">
+
           <div>
             <h3>Últimas citas registradas</h3>
-            <p>Consulta los cinco registros más recientes.</p>
+
+            <p>
+              Consulta los cinco registros más recientes.
+            </p>
           </div>
-          <span class="reporte-tabla-icono">🗓️</span>
+
+          <span class="reporte-tabla-icono">
+            🗓️
+          </span>
+
         </div>
 
         ${crearTablaCitas(citas)}
+
       </div>
+
     </section>
   `
 }
@@ -316,13 +409,19 @@ export function activarModuloReportes(): void {
       '#btn-exportar-pdf',
     )
 
-  botonExcel?.addEventListener('click', () => {
-    exportarReporteExcel()
-  })
+  botonExcel?.addEventListener(
+    'click',
+    () => {
+      exportarReporteExcel()
+    },
+  )
 
-  botonPDF?.addEventListener('click', () => {
-    exportarReportePDF()
-  })
+  botonPDF?.addEventListener(
+    'click',
+    () => {
+      exportarReportePDF()
+    },
+  )
 }
 
 function crearTarjetaReporte(
@@ -334,13 +433,27 @@ function crearTarjetaReporte(
 ): string {
   return `
     <article class="reporte-tarjeta reporte-tarjeta-${color}">
-      <div class="reporte-tarjeta-icono">${icono}</div>
+
+      <div class="reporte-tarjeta-icono">
+        ${icono}
+      </div>
 
       <div class="reporte-tarjeta-contenido">
-        <span>${escaparHTML(titulo)}</span>
-        <strong>${cantidad}</strong>
-        <small>${escaparHTML(descripcion)}</small>
+
+        <span>
+          ${escaparHTML(titulo)}
+        </span>
+
+        <strong>
+          ${cantidad}
+        </strong>
+
+        <small>
+          ${escaparHTML(descripcion)}
+        </small>
+
       </div>
+
     </article>
   `
 }
@@ -350,23 +463,40 @@ function crearBarraReporte(
   cantidad: number,
   maximo: number,
 ): string {
-  const porcentaje = Math.round(
-    (cantidad / maximo) * 100,
-  )
+  const porcentaje =
+    maximo > 0
+      ? Math.min(
+          100,
+          Math.round(
+            (cantidad / maximo) * 100,
+          ),
+        )
+      : 0
 
   return `
     <div class="reporte-barra-fila">
+
       <div class="reporte-barra-datos">
-        <span>${escaparHTML(nombre)}</span>
-        <strong>${cantidad}</strong>
+
+        <span>
+          ${escaparHTML(nombre)}
+        </span>
+
+        <strong>
+          ${cantidad}
+        </strong>
+
       </div>
 
       <div class="reporte-barra-fondo">
+
         <div
           class="reporte-barra-progreso"
           style="width: ${porcentaje}%"
         ></div>
+
       </div>
+
     </div>
   `
 }
@@ -377,16 +507,23 @@ function crearFilaEstado(
 ): string {
   return `
     <div class="reporte-estado-fila">
+
       <span>
         <i></i>
         ${escaparHTML(nombre)}
       </span>
-      <strong>${cantidad}</strong>
+
+      <strong>
+        ${cantidad}
+      </strong>
+
     </div>
   `
 }
 
-function crearTablaCitas(citas: Cita[]): string {
+function crearTablaCitas(
+  citas: Cita[],
+): string {
   if (citas.length === 0) {
     return `
       <div class="empty-state">
@@ -396,12 +533,19 @@ function crearTablaCitas(citas: Cita[]): string {
   }
 
   const citasRecientes = [...citas]
-    .reverse()
+    .sort(
+      (a, b) =>
+        `${b.fecha} ${b.hora}`.localeCompare(
+          `${a.fecha} ${a.hora}`,
+        ),
+    )
     .slice(0, 5)
 
   return `
     <div class="tabla-contenedor">
+
       <table class="tabla-datos">
+
         <thead>
           <tr>
             <th>Cliente</th>
@@ -413,59 +557,102 @@ function crearTablaCitas(citas: Cita[]): string {
         </thead>
 
         <tbody>
+
           ${citasRecientes
             .map(
               (cita) => `
                 <tr>
+
                   <td>
-                    ${escaparHTML(cita.clienteNombre)}
+                    ${escaparHTML(
+                      cita.clienteNombre,
+                    )}
                   </td>
 
                   <td>
-                    ${escaparHTML(cita.asesorNombre)}
+                    ${escaparHTML(
+                      cita.asesorNombre,
+                    )}
                   </td>
 
                   <td>
-                    ${formatearFecha(cita.fecha)}
+                    ${formatearFecha(
+                      cita.fecha,
+                    )}
                   </td>
 
                   <td>
-                    ${escaparHTML(cita.hora)}
+                    ${escaparHTML(
+                      cita.hora,
+                    )}
                   </td>
 
                   <td>
-                    ${escaparHTML(cita.estado)}
+                    ${escaparHTML(
+                      cita.estado,
+                    )}
                   </td>
+
                 </tr>
               `,
             )
             .join('')}
+
         </tbody>
+
       </table>
+
     </div>
   `
 }
 
 function exportarReporteExcel(): void {
-  const clientes = obtenerDatos<Cliente>('clientes')
-  const leads = obtenerDatos<Lead>('leads')
-  const asesores = obtenerDatos<Asesor>('asesores')
-  const citas = obtenerDatos<Cita>('citas')
+  const clientes =
+    obtenerDatos<Cliente>('clientes')
+
+  const leads =
+    obtenerDatos<Lead>('leads')
+
+  const asesores =
+    obtenerDatos<Asesor>('asesores')
+
+  const citas =
+    obtenerDatos<Cita>('citas')
+
   const notificaciones =
-    obtenerDatos<Notificacion>('notificaciones')
+    obtenerDatos<Notificacion>(
+      'notificaciones',
+    )
 
   const filas = [
     ['REPORTE CRM KARSAN DIGITAL'],
-    ['Fecha', new Date().toLocaleString()],
+
+    [
+      'Fecha',
+      new Date().toLocaleString(),
+    ],
+
     [],
+
     ['Categoría', 'Cantidad'],
+
     ['Clientes', clientes.length],
+
     ['Leads', leads.length],
+
     ['Asesores', asesores.length],
+
     ['Citas', citas.length],
-    ['Notificaciones', notificaciones.length],
+
+    [
+      'Notificaciones',
+      notificaciones.length,
+    ],
+
     [],
+
     ['CITAS'],
+
     [
       'Cliente',
       'Asesor',
@@ -474,54 +661,100 @@ function exportarReporteExcel(): void {
       'Motivo',
       'Estado',
     ],
-    ...citas.map((cita) => [
-      cita.clienteNombre,
-      cita.asesorNombre,
-      cita.fecha,
-      cita.hora,
-      cita.motivo,
-      cita.estado,
-    ]),
+
+    ...citas.map(
+      (cita) => [
+        cita.clienteNombre,
+        cita.asesorNombre,
+        cita.fecha,
+        cita.hora,
+        cita.motivo,
+        cita.estado,
+      ],
+    ),
   ]
 
-  const contenidoCSV = filas
-    .map((fila) =>
-      fila
-        .map((valor) => {
-          const texto = String(valor ?? '')
-            .replace(/"/g, '""')
+  const contenidoCSV =
+    filas
+      .map(
+        (fila) =>
+          fila
+            .map(
+              (valor) => {
+                const texto =
+                  String(
+                    valor ?? '',
+                  ).replace(
+                    /"/g,
+                    '""',
+                  )
 
-          return `"${texto}"`
-        })
-        .join(','),
-    )
-    .join('\n')
+                return `"${texto}"`
+              },
+            )
+            .join(','),
+      )
+      .join('\n')
 
   const archivo = new Blob(
-    ['\uFEFF' + contenidoCSV],
+    [
+      '\uFEFF' +
+        contenidoCSV,
+    ],
     {
       type: 'text/csv;charset=utf-8;',
     },
   )
 
-  const enlace = document.createElement('a')
+  const enlace =
+    document.createElement('a')
 
-  enlace.href = URL.createObjectURL(archivo)
-  enlace.download = 'reporte-crm-karsan.csv'
+  const url =
+    URL.createObjectURL(
+      archivo,
+    )
+
+  enlace.href = url
+
+  enlace.download =
+    'reporte-crm-karsan.csv'
+
+  document.body.appendChild(
+    enlace,
+  )
+
   enlace.click()
 
-  URL.revokeObjectURL(enlace.href)
+  document.body.removeChild(
+    enlace,
+  )
+
+  URL.revokeObjectURL(url)
 }
 
 function exportarReportePDF(): void {
-  const clientes = obtenerDatos<Cliente>('clientes')
-  const leads = obtenerDatos<Lead>('leads')
-  const asesores = obtenerDatos<Asesor>('asesores')
-  const citas = obtenerDatos<Cita>('citas')
-  const notificaciones =
-    obtenerDatos<Notificacion>('notificaciones')
+  const clientes =
+    obtenerDatos<Cliente>('clientes')
 
-  const ventana = window.open('', '_blank')
+  const leads =
+    obtenerDatos<Lead>('leads')
+
+  const asesores =
+    obtenerDatos<Asesor>('asesores')
+
+  const citas =
+    obtenerDatos<Cita>('citas')
+
+  const notificaciones =
+    obtenerDatos<Notificacion>(
+      'notificaciones',
+    )
+
+  const ventana =
+    window.open(
+      '',
+      '_blank',
+    )
 
   if (!ventana) {
     window.alert(
@@ -533,13 +766,19 @@ function exportarReportePDF(): void {
 
   ventana.document.write(`
     <!DOCTYPE html>
+
     <html lang="es">
+
       <head>
+
         <meta charset="UTF-8" />
 
-        <title>Reporte CRM Karsan Digital</title>
+        <title>
+          Reporte CRM Karsan Digital
+        </title>
 
         <style>
+
           body {
             font-family: Arial, sans-serif;
             padding: 32px;
@@ -557,7 +796,8 @@ function exportarReportePDF(): void {
 
           .resumen {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns:
+              repeat(3, 1fr);
             gap: 15px;
             margin-bottom: 30px;
           }
@@ -590,18 +830,26 @@ function exportarReportePDF(): void {
           th {
             background: #f2f4f7;
           }
+
         </style>
+
       </head>
 
       <body>
-        <h1>Reporte CRM Karsan Digital</h1>
+
+        <h1>
+          Reporte CRM Karsan Digital
+        </h1>
 
         <p class="fecha">
           Generado:
-          ${new Date().toLocaleString()}
+          ${escaparHTML(
+            new Date().toLocaleString(),
+          )}
         </p>
 
         <div class="resumen">
+
           ${crearTarjetaImpresion(
             'Clientes',
             clientes.length,
@@ -626,12 +874,17 @@ function exportarReportePDF(): void {
             'Notificaciones',
             notificaciones.length,
           )}
+
         </div>
 
-        <h2>Citas registradas</h2>
+        <h2>
+          Citas registradas
+        </h2>
 
         <table>
+
           <thead>
+
             <tr>
               <th>Cliente</th>
               <th>Asesor</th>
@@ -639,37 +892,53 @@ function exportarReportePDF(): void {
               <th>Hora</th>
               <th>Estado</th>
             </tr>
+
           </thead>
 
           <tbody>
+
             ${citas
               .map(
                 (cita) => `
                   <tr>
+
                     <td>
-                      ${escaparHTML(cita.clienteNombre)}
+                      ${escaparHTML(
+                        cita.clienteNombre,
+                      )}
                     </td>
 
                     <td>
-                      ${escaparHTML(cita.asesorNombre)}
+                      ${escaparHTML(
+                        cita.asesorNombre,
+                      )}
                     </td>
 
                     <td>
-                      ${formatearFecha(cita.fecha)}
+                      ${formatearFecha(
+                        cita.fecha,
+                      )}
                     </td>
 
                     <td>
-                      ${escaparHTML(cita.hora)}
+                      ${escaparHTML(
+                        cita.hora,
+                      )}
                     </td>
 
                     <td>
-                      ${escaparHTML(cita.estado)}
+                      ${escaparHTML(
+                        cita.estado,
+                      )}
                     </td>
+
                   </tr>
                 `,
               )
               .join('')}
+
           </tbody>
+
         </table>
 
         <script>
@@ -677,7 +946,9 @@ function exportarReportePDF(): void {
             window.print()
           }
         </script>
+
       </body>
+
     </html>
   `)
 
@@ -690,23 +961,40 @@ function crearTarjetaImpresion(
 ): string {
   return `
     <div class="tarjeta">
-      <span>${escaparHTML(titulo)}</span>
-      <strong>${cantidad}</strong>
+
+      <span>
+        ${escaparHTML(titulo)}
+      </span>
+
+      <strong>
+        ${cantidad}
+      </strong>
+
     </div>
   `
 }
 
-function obtenerDatos<T>(clave: string): T[] {
-  const datos = localStorage.getItem(clave)
+function obtenerDatos<T>(
+  clave: string,
+): T[] {
+  const datos =
+    localStorage.getItem(
+      clave,
+    )
 
   if (!datos) {
     return []
   }
 
   try {
-    const resultado = JSON.parse(datos)
+    const resultado =
+      JSON.parse(datos)
 
-    if (!Array.isArray(resultado)) {
+    if (
+      !Array.isArray(
+        resultado,
+      )
+    ) {
       return []
     }
 
@@ -716,22 +1004,49 @@ function obtenerDatos<T>(clave: string): T[] {
   }
 }
 
-function formatearFecha(fecha: string): string {
-  const partes = fecha.split('-')
+function contarEstados<T extends { estado: string }>(
+  registros: T[],
+  estados: string[],
+): number {
+  return registros.filter(
+    (registro) =>
+      estados.includes(
+        registro.estado,
+      ),
+  ).length
+}
 
-  if (partes.length !== 3) {
+function formatearFecha(
+  fecha: string,
+): string {
+  const partes =
+    fecha.split('-')
+
+  if (
+    partes.length !== 3
+  ) {
     return fecha
   }
 
-  const [anio, mes, dia] = partes
+  const [
+    anio,
+    mes,
+    dia,
+  ] = partes
 
   return `${dia}/${mes}/${anio}`
 }
 
-function escaparHTML(texto: string): string {
-  const elemento = document.createElement('div')
+function escaparHTML(
+  texto: string,
+): string {
+  const elemento =
+    document.createElement(
+      'div',
+    )
 
-  elemento.textContent = texto
+  elemento.textContent =
+    texto
 
   return elemento.innerHTML
 }

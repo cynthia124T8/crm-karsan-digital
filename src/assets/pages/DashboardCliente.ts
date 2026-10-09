@@ -1,1183 +1,3949 @@
-import { mostrarLogin } from './Login'
-import {
-  activarModuloChatbot,
-  crearModuloChatbot,
-} from './Chatbot'
+// =========================================================
+// KARSAN DIGITAL CRM
+// DASHBOARD CLIENTE
+// PORTAL DEL CLIENTE
+// =========================================================
 
-type UsuarioActivo = {
-  id?: string
-  nombre: string
-  correo: string
-  rol: string
+import { mostrarCalendario } from "./Calendario";
+
+// =========================================================
+// INTERFACES
+// =========================================================
+
+interface Documento {
+  id: number;
+  nombre?: string;
+  nombreArchivo?: string;
+  archivo?: string;
+  tipo?: string;
+  correo?: string;
+  usuarioId?: number;
+  fecha?: string;
+  createdAt?: string;
+  tamaño?: number;
 }
 
-export function mostrarDashboardCliente(app: HTMLDivElement): void {
-  const usuario = obtenerUsuarioActivo()
+// =========================================================
+// ESTILOS EXCLUSIVOS DEL PORTAL CLIENTE
+// =========================================================
 
-  if (!usuario) {
-    mostrarLogin(app)
-    return
+function cargarEstilosCliente(): void {
+  const estiloExistente = document.getElementById(
+    "karsan-cliente-styles"
+  );
+
+  if (estiloExistente) {
+    return;
   }
 
-  app.innerHTML = `
-    <div class="crm-shell">
-      <aside class="crm-sidebar crm-sidebar-cliente">
-        <div>
-          <div class="crm-brand crm-brand-cliente">
-            <div class="crm-brand-mark">K</div>
+  const style = document.createElement("style");
 
-            <div>
-              <strong>Karsan Digital</strong>
-              <span>CLIENTE</span>
+  style.id = "karsan-cliente-styles";
+
+  style.textContent = `
+    /* =====================================================
+       KARSAN DIGITAL - PORTAL CLIENTE
+       ESTILOS AISLADOS
+       ===================================================== */
+
+    .cliente-portal {
+      --cliente-primary: #5b5ce2;
+      --cliente-primary-dark: #4546c9;
+      --cliente-primary-light: #eef0ff;
+      --cliente-background: #f5f6fa;
+      --cliente-white: #ffffff;
+      --cliente-text: #202235;
+      --cliente-secondary: #6f7385;
+      --cliente-muted: #9da1b2;
+      --cliente-border: #e7e8ef;
+      --cliente-success: #18a974;
+      --cliente-success-light: #e9f8f2;
+      --cliente-warning: #f3a712;
+      --cliente-warning-light: #fff5dc;
+      --cliente-danger: #e05260;
+      --cliente-danger-light: #ffedef;
+      --cliente-shadow: 0 8px 30px rgba(35, 38, 80, 0.07);
+      --cliente-radius: 18px;
+
+      display: flex;
+      min-height: 100vh;
+      width: 100%;
+      background: var(--cliente-background);
+      color: var(--cliente-text);
+      font-family:
+        Inter,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+      box-sizing: border-box;
+    }
+
+    .cliente-portal *,
+    .cliente-portal *::before,
+    .cliente-portal *::after {
+      box-sizing: border-box;
+    }
+
+    /* =====================================================
+       SIDEBAR
+       ===================================================== */
+
+    .cliente-sidebar {
+      width: 260px;
+      min-width: 260px;
+      min-height: 100vh;
+      background: #ffffff;
+      border-right: 1px solid var(--cliente-border);
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      z-index: 1000;
+    }
+
+    .cliente-brand {
+      height: 88px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 24px;
+      border-bottom: 1px solid var(--cliente-border);
+    }
+
+    .cliente-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 13px;
+      background: linear-gradient(
+        135deg,
+        var(--cliente-primary),
+        #7778ed
+      );
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 21px;
+      font-weight: 800;
+      box-shadow: 0 8px 18px rgba(91, 92, 226, 0.25);
+    }
+
+    .cliente-brand-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1;
+    }
+
+    .cliente-brand-title {
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
+    .cliente-brand-subtitle {
+      margin-top: 5px;
+      color: var(--cliente-primary);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 2px;
+    }
+
+    .cliente-nav {
+      flex: 1;
+      padding: 22px 14px;
+      overflow-y: auto;
+    }
+
+    .cliente-nav-title {
+      color: var(--cliente-muted);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 1.2px;
+      padding: 0 12px 10px;
+      text-transform: uppercase;
+    }
+
+    .cliente-nav-item {
+      width: 100%;
+      min-height: 48px;
+      margin-bottom: 5px;
+      border: none;
+      border-radius: 12px;
+      background: transparent;
+      color: var(--cliente-secondary);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 13px;
+      cursor: pointer;
+      text-align: left;
+      font-size: 14px;
+      font-weight: 600;
+      transition: 0.2s ease;
+    }
+
+    .cliente-nav-item:hover {
+      background: #f7f7fc;
+      color: var(--cliente-primary);
+      transform: translateX(2px);
+    }
+
+    .cliente-nav-item.active {
+      background: var(--cliente-primary-light);
+      color: var(--cliente-primary);
+      font-weight: 700;
+    }
+
+    .cliente-nav-icon {
+      width: 24px;
+      height: 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+
+    .cliente-nav-badge {
+      margin-left: auto;
+      min-width: 22px;
+      height: 22px;
+      border-radius: 11px;
+      background: var(--cliente-primary);
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 6px;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .cliente-user {
+      margin: 0 14px 12px;
+      padding: 13px;
+      border-radius: 14px;
+      background: #f8f9fc;
+      border: 1px solid var(--cliente-border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .cliente-user-avatar,
+    .cliente-header-avatar,
+    .cliente-profile-avatar {
+      background: linear-gradient(
+        135deg,
+        var(--cliente-primary),
+        #8586f1
+      );
+      color: white;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .cliente-user-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      font-size: 14px;
+    }
+
+    .cliente-user-info {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cliente-user-info strong {
+      font-size: 12px;
+      color: var(--cliente-text);
+    }
+
+    .cliente-user-info span {
+      margin-top: 3px;
+      font-size: 10px;
+      color: var(--cliente-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .cliente-logout {
+      margin: 0 14px 18px;
+      min-height: 44px;
+      border: 1px solid #f0dfe1;
+      border-radius: 12px;
+      background: #fff8f8;
+      color: var(--cliente-danger);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      font-size: 13px;
+      font-weight: 700;
+      transition: 0.2s ease;
+    }
+
+    .cliente-logout:hover {
+      background: var(--cliente-danger-light);
+    }
+
+    /* =====================================================
+       MAIN
+       ===================================================== */
+
+    .cliente-main {
+      flex: 1;
+      min-width: 0;
+      background: var(--cliente-background);
+    }
+
+    .cliente-header {
+      height: 82px;
+      background: white;
+      border-bottom: 1px solid var(--cliente-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      position: sticky;
+      top: 0;
+      z-index: 500;
+    }
+
+    .cliente-header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .cliente-breadcrumb {
+      color: var(--cliente-muted);
+      font-size: 11px;
+      margin-bottom: 5px;
+    }
+
+    .cliente-header-title {
+      font-size: 16px;
+      font-weight: 750;
+    }
+
+    .cliente-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+    }
+
+    .cliente-notification-button {
+      position: relative;
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--cliente-border);
+      border-radius: 12px;
+      background: white;
+      color: var(--cliente-secondary);
+      cursor: pointer;
+      font-size: 19px;
+      transition: 0.2s ease;
+    }
+
+    .cliente-notification-button:hover {
+      background: var(--cliente-primary-light);
+      color: var(--cliente-primary);
+      border-color: #dcdcff;
+    }
+
+    .cliente-notification-dot {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--cliente-danger);
+      border: 2px solid white;
+    }
+
+    .cliente-header-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      font-size: 14px;
+    }
+
+    .cliente-mobile-menu {
+      display: none;
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--cliente-border);
+      border-radius: 11px;
+      background: white;
+      cursor: pointer;
+      font-size: 20px;
+    }
+
+    .cliente-content {
+      padding: 32px;
+      max-width: 1500px;
+      margin: 0 auto;
+    }
+
+    /* =====================================================
+       PAGE HEADING
+       ===================================================== */
+
+    .cliente-page-heading {
+      margin-bottom: 26px;
+    }
+
+    .cliente-page-label {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: var(--cliente-primary-light);
+      color: var(--cliente-primary);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+
+    .cliente-page-heading h1 {
+      margin: 0;
+      font-size: clamp(25px, 3vw, 34px);
+      line-height: 1.2;
+      letter-spacing: -0.8px;
+    }
+
+    .cliente-page-heading p {
+      margin: 9px 0 0;
+      color: var(--cliente-secondary);
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 720px;
+    }
+
+    /* =====================================================
+       STATS
+       ===================================================== */
+
+    .cliente-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    .cliente-stat {
+      background: white;
+      border: 1px solid var(--cliente-border);
+      border-radius: var(--cliente-radius);
+      padding: 20px;
+      box-shadow: var(--cliente-shadow);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      min-height: 112px;
+      transition: 0.2s ease;
+    }
+
+    .cliente-stat:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 34px rgba(35, 38, 80, 0.1);
+    }
+
+    .cliente-stat-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 14px;
+      background: var(--cliente-primary-light);
+      color: var(--cliente-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 21px;
+      flex-shrink: 0;
+    }
+
+    .cliente-stat:nth-child(2) .cliente-stat-icon {
+      background: var(--cliente-warning-light);
+      color: var(--cliente-warning);
+    }
+
+    .cliente-stat:nth-child(3) .cliente-stat-icon {
+      background: var(--cliente-success-light);
+      color: var(--cliente-success);
+    }
+
+    .cliente-stat:nth-child(4) .cliente-stat-icon {
+      background: var(--cliente-danger-light);
+      color: var(--cliente-danger);
+    }
+
+    .cliente-stat-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .cliente-stat-info span {
+      color: var(--cliente-secondary);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .cliente-stat-info strong {
+      font-size: 25px;
+      line-height: 1;
+    }
+
+    /* =====================================================
+       CARDS
+       ===================================================== */
+
+    .cliente-columns {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(300px, 0.8fr);
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .cliente-card {
+      background: white;
+      border: 1px solid var(--cliente-border);
+      border-radius: var(--cliente-radius);
+      box-shadow: var(--cliente-shadow);
+      padding: 22px;
+      margin-bottom: 20px;
+    }
+
+    .cliente-columns .cliente-card {
+      margin-bottom: 0;
+    }
+
+    .cliente-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      margin-bottom: 18px;
+    }
+
+    .cliente-card-label {
+      display: block;
+      color: var(--cliente-primary);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 1.2px;
+      margin-bottom: 5px;
+    }
+
+    .cliente-card-header h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .cliente-text-button {
+      border: none;
+      background: transparent;
+      color: var(--cliente-primary);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 7px;
+    }
+
+    .cliente-text-button:hover {
+      text-decoration: underline;
+    }
+
+    /* =====================================================
+       PROJECTS
+       ===================================================== */
+
+    .cliente-project-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cliente-project-item {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      padding: 14px 0;
+      border-bottom: 1px solid #f0f0f4;
+    }
+
+    .cliente-project-item:last-child {
+      border-bottom: none;
+    }
+
+    .cliente-project-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: var(--cliente-primary-light);
+      color: var(--cliente-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .cliente-project-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .cliente-project-info strong {
+      font-size: 13px;
+    }
+
+    .cliente-project-info span {
+      color: var(--cliente-secondary);
+      font-size: 11px;
+    }
+
+    .cliente-status {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      padding: 6px 9px;
+      font-size: 10px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .cliente-status-process {
+      background: var(--cliente-primary-light);
+      color: var(--cliente-primary);
+    }
+
+    .cliente-status-review {
+      background: var(--cliente-warning-light);
+      color: #a96d00;
+    }
+
+    .cliente-status-active {
+      background: var(--cliente-success-light);
+      color: var(--cliente-success);
+    }
+
+    /* =====================================================
+       ACTIVITY
+       ===================================================== */
+
+    .cliente-activity-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cliente-activity-item {
+      display: flex;
+      gap: 13px;
+      padding: 13px 0;
+      border-bottom: 1px solid #f0f0f4;
+    }
+
+    .cliente-activity-item:last-child {
+      border-bottom: none;
+    }
+
+    .cliente-activity-dot {
+      width: 10px;
+      height: 10px;
+      margin-top: 4px;
+      border-radius: 50%;
+      background: var(--cliente-primary);
+      box-shadow: 0 0 0 5px var(--cliente-primary-light);
+      flex-shrink: 0;
+    }
+
+    .cliente-activity-item div:last-child {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .cliente-activity-item strong {
+      font-size: 12px;
+    }
+
+    .cliente-activity-item span {
+      color: var(--cliente-secondary);
+      font-size: 11px;
+    }
+
+    /* =====================================================
+       QUICK ACTIONS
+       ===================================================== */
+
+    .cliente-quick-actions {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 13px;
+    }
+
+    .cliente-quick-action {
+      border: 1px solid var(--cliente-border);
+      border-radius: 14px;
+      background: #fafaff;
+      padding: 18px;
+      text-align: left;
+      cursor: pointer;
+      transition: 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .cliente-quick-action:hover {
+      border-color: #cecff8;
+      background: var(--cliente-primary-light);
+      transform: translateY(-2px);
+    }
+
+    .cliente-quick-action-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: white;
+      color: var(--cliente-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      margin-bottom: 3px;
+    }
+
+    .cliente-quick-action strong {
+      font-size: 12px;
+    }
+
+    .cliente-quick-action small {
+      color: var(--cliente-secondary);
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    /* =====================================================
+       BUTTONS
+       ===================================================== */
+
+    .cliente-primary-button {
+      min-height: 44px;
+      border: none;
+      border-radius: 11px;
+      background: var(--cliente-primary);
+      color: white;
+      padding: 0 17px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      transition: 0.2s ease;
+    }
+
+    .cliente-primary-button:hover {
+      background: var(--cliente-primary-dark);
+      transform: translateY(-1px);
+    }
+
+    /* =====================================================
+       FORMS
+       ===================================================== */
+
+    .cliente-form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-bottom: 17px;
+    }
+
+    .cliente-form-group label {
+      font-size: 12px;
+      color: var(--cliente-text);
+      font-weight: 700;
+    }
+
+    .cliente-form-group input,
+    .cliente-form-group select,
+    .cliente-form-group textarea,
+    .cliente-message-form textarea {
+      width: 100%;
+      border: 1px solid var(--cliente-border);
+      border-radius: 11px;
+      background: white;
+      color: var(--cliente-text);
+      padding: 12px 13px;
+      outline: none;
+      font-family: inherit;
+      font-size: 13px;
+      transition: 0.2s ease;
+    }
+
+    .cliente-form-group input:focus,
+    .cliente-form-group select:focus,
+    .cliente-form-group textarea:focus,
+    .cliente-message-form textarea:focus {
+      border-color: var(--cliente-primary);
+      box-shadow: 0 0 0 3px var(--cliente-primary-light);
+    }
+
+    /* =====================================================
+       UPLOAD
+       ===================================================== */
+
+    .cliente-upload-area {
+      border: 2px dashed #dcddef;
+      border-radius: 16px;
+      padding: 34px 20px;
+      text-align: center;
+      background: #fafaff;
+      margin-bottom: 22px;
+    }
+
+    .cliente-upload-icon {
+      width: 55px;
+      height: 55px;
+      margin: 0 auto 12px;
+      border-radius: 15px;
+      background: var(--cliente-primary-light);
+      color: var(--cliente-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 25px;
+    }
+
+    .cliente-upload-area h3 {
+      margin: 0 0 7px;
+      font-size: 16px;
+    }
+
+    .cliente-upload-area p {
+      margin: 0 0 17px;
+      color: var(--cliente-secondary);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    .cliente-selected-file {
+      margin-top: 12px;
+      color: var(--cliente-primary);
+      font-size: 11px;
+      font-weight: 700;
+      word-break: break-word;
+    }
+
+    .cliente-upload-message {
+      margin-top: 13px;
+      padding: 10px 12px;
+      border-radius: 9px;
+      font-size: 11px;
+      display: none;
+    }
+
+    .cliente-upload-message:not(:empty) {
+      display: block;
+    }
+
+    .cliente-upload-message.success {
+      background: var(--cliente-success-light);
+      color: var(--cliente-success);
+    }
+
+    .cliente-upload-message.error {
+      background: var(--cliente-danger-light);
+      color: var(--cliente-danger);
+    }
+
+    /* =====================================================
+       DOCUMENTS
+       ===================================================== */
+
+    .cliente-document-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cliente-document-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid #f0f0f4;
+    }
+
+    .cliente-document-item:last-child {
+      border-bottom: none;
+    }
+
+    .cliente-document-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: var(--cliente-danger-light);
+      color: var(--cliente-danger);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 18px;
+    }
+
+    .cliente-document-information {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .cliente-document-information strong {
+      font-size: 12px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .cliente-document-information span {
+      color: var(--cliente-secondary);
+      font-size: 10px;
+    }
+
+    .cliente-document-download {
+      border: 1px solid #dcddef;
+      background: white;
+      color: var(--cliente-primary);
+      border-radius: 9px;
+      padding: 8px 11px;
+      cursor: pointer;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .cliente-document-download:hover {
+      background: var(--cliente-primary-light);
+    }
+
+    /* =====================================================
+       EMPTY
+       ===================================================== */
+
+    .cliente-empty {
+      min-height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 7px;
+      text-align: center;
+      color: var(--cliente-secondary);
+    }
+
+    .cliente-empty-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: #f2f3f8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 21px;
+      margin-bottom: 4px;
+    }
+
+    .cliente-empty strong {
+      color: var(--cliente-text);
+      font-size: 13px;
+    }
+
+    .cliente-empty span {
+      font-size: 11px;
+    }
+
+    /* =====================================================
+       MESSAGES
+       ===================================================== */
+
+    .cliente-message-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 22px;
+    }
+
+    .cliente-message-item {
+      display: flex;
+      gap: 13px;
+      padding: 15px;
+      border-radius: 13px;
+      background: #fafaff;
+      border: 1px solid #f0f0f5;
+    }
+
+    .cliente-message-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 11px;
+      background: var(--cliente-primary-light);
+      color: var(--cliente-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .cliente-message-content {
+      flex: 1;
+    }
+
+    .cliente-message-content strong {
+      font-size: 12px;
+    }
+
+    .cliente-message-content p {
+      margin: 6px 0;
+      color: var(--cliente-secondary);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .cliente-message-content span {
+      color: var(--cliente-muted);
+      font-size: 10px;
+    }
+
+    .cliente-message-form {
+      border-top: 1px solid var(--cliente-border);
+      padding-top: 20px;
+    }
+
+    .cliente-message-form textarea {
+      resize: vertical;
+      min-height: 110px;
+      margin-bottom: 12px;
+    }
+
+    /* =====================================================
+       NOTIFICATIONS
+       ===================================================== */
+
+    .cliente-notification-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cliente-notification-item {
+      display: flex;
+      gap: 14px;
+      padding: 17px 0;
+      border-bottom: 1px solid #f0f0f4;
+    }
+
+    .cliente-notification-item:last-child {
+      border-bottom: none;
+    }
+
+    .cliente-notification-icon {
+      width: 43px;
+      height: 43px;
+      border-radius: 12px;
+      background: var(--cliente-success-light);
+      color: var(--cliente-success);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-weight: 800;
+    }
+
+    .cliente-notification-item strong {
+      font-size: 12px;
+    }
+
+    .cliente-notification-item p {
+      margin: 5px 0;
+      color: var(--cliente-secondary);
+      font-size: 11px;
+    }
+
+    .cliente-notification-item span {
+      color: var(--cliente-muted);
+      font-size: 10px;
+    }
+
+    /* =====================================================
+       COMPANY
+       ===================================================== */
+
+    .cliente-company-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    .cliente-company-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cliente-company-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      padding: 15px 0;
+      border-bottom: 1px solid #f0f0f4;
+      font-size: 12px;
+    }
+
+    .cliente-company-row:last-child {
+      border-bottom: none;
+    }
+
+    .cliente-company-row span {
+      color: var(--cliente-secondary);
+    }
+
+    .cliente-company-row strong {
+      text-align: right;
+    }
+
+    .cliente-social-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .cliente-social-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px;
+      border-radius: 12px;
+      background: #fafaff;
+      border: 1px solid #f0f0f5;
+    }
+
+    .cliente-social-name {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .cliente-social-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      background: var(--cliente-primary-light);
+      color: var(--cliente-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+    }
+
+    .cliente-social-connected {
+      color: var(--cliente-success);
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    /* =====================================================
+       PROFILE
+       ===================================================== */
+
+    .cliente-profile-header {
+      display: flex;
+      align-items: center;
+      gap: 17px;
+      padding-bottom: 22px;
+      margin-bottom: 22px;
+      border-bottom: 1px solid var(--cliente-border);
+    }
+
+    .cliente-profile-avatar {
+      width: 68px;
+      height: 68px;
+      border-radius: 19px;
+      font-size: 23px;
+    }
+
+    .cliente-profile-header h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .cliente-profile-header p {
+      margin: 5px 0 0;
+      color: var(--cliente-secondary);
+      font-size: 12px;
+    }
+
+    .cliente-profile-form {
+      max-width: 700px;
+    }
+
+    /* =====================================================
+       RESPONSIVE
+       ===================================================== */
+
+    @media (max-width: 1100px) {
+      .cliente-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .cliente-quick-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 900px) {
+      .cliente-sidebar {
+        position: fixed;
+        left: -280px;
+        top: 0;
+        transition: left 0.25s ease;
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.08);
+      }
+
+      .cliente-sidebar.open {
+        left: 0;
+      }
+
+      .cliente-mobile-menu {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .cliente-content {
+        padding: 24px;
+      }
+
+      .cliente-columns,
+      .cliente-company-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 650px) {
+      .cliente-header {
+        height: 70px;
+        padding: 0 16px;
+      }
+
+      .cliente-content {
+        padding: 18px 14px;
+      }
+
+      .cliente-stats {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .cliente-stat {
+        padding: 14px;
+        min-height: 95px;
+      }
+
+      .cliente-stat-icon {
+        width: 42px;
+        height: 42px;
+      }
+
+      .cliente-stat-info strong {
+        font-size: 20px;
+      }
+
+      .cliente-stat-info span {
+        font-size: 10px;
+      }
+
+      .cliente-quick-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .cliente-page-heading h1 {
+        font-size: 25px;
+      }
+
+      .cliente-document-item {
+        align-items: flex-start;
+      }
+
+      .cliente-document-download {
+        padding: 7px 8px;
+      }
+
+      .cliente-header-title {
+        font-size: 14px;
+      }
+
+      .cliente-breadcrumb {
+        font-size: 9px;
+      }
+    }
+
+    @media (max-width: 430px) {
+      .cliente-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .cliente-stat {
+        min-height: 82px;
+      }
+
+      .cliente-card {
+        padding: 16px;
+        border-radius: 15px;
+      }
+
+      .cliente-project-item {
+        flex-wrap: wrap;
+      }
+
+      .cliente-status {
+        margin-left: 55px;
+      }
+
+      .cliente-header-avatar {
+        width: 38px;
+        height: 38px;
+      }
+
+      .cliente-notification-button {
+        width: 38px;
+        height: 38px;
+      }
+    }
+  `;
+
+  document.head.appendChild(style);
+}
+
+// =========================================================
+// DASHBOARD PRINCIPAL
+// =========================================================
+
+export function mostrarDashboardCliente(
+  app: HTMLElement,
+  email: string = "cliente@karsan.com"
+): void {
+
+  cargarEstilosCliente();
+
+  app.innerHTML = `
+    <div class="cliente-portal">
+
+      <!-- =================================================
+           SIDEBAR
+           ================================================= -->
+
+      <aside class="cliente-sidebar" id="clienteSidebar">
+
+        <div class="cliente-brand">
+
+          <div class="cliente-logo">
+            K
+          </div>
+
+          <div class="cliente-brand-text">
+            <div class="cliente-brand-title">
+              KARSAN
+            </div>
+
+            <div class="cliente-brand-subtitle">
+              DIGITAL
             </div>
           </div>
 
-          <nav class="crm-nav">
-            <button class="menu-item active" data-seccion="inicio">
-              <span class="crm-nav-icon">🏠</span>
-              <span>Inicio</span>
-            </button>
-
-            <button class="menu-item" data-seccion="perfil">
-              <span class="crm-nav-icon">👤</span>
-              <span>Mi perfil</span>
-            </button>
-
-            <button class="menu-item" data-seccion="citas">
-              <span class="crm-nav-icon">📅</span>
-              <span>Mis citas</span>
-            </button>
-
-            <button class="menu-item" data-seccion="mensajes">
-              <span class="crm-nav-icon">💬</span>
-              <span>Mensajes</span>
-            </button>
-
-            <button class="menu-item" data-seccion="documentos">
-              <span class="crm-nav-icon">📄</span>
-              <span>Documentos</span>
-            </button>
-
-            <button class="menu-item" data-seccion="progreso">
-              <span class="crm-nav-icon">📊</span>
-              <span>Mi progreso</span>
-            </button>
-
-            <button class="menu-item" data-seccion="chatbot">
-              <span class="crm-nav-icon">🤖</span>
-              <span>Chatbot</span>
-            </button>
-
-            <button class="menu-item" data-seccion="configuracion">
-              <span class="crm-nav-icon">⚙️</span>
-              <span>Configuración</span>
-            </button>
-
-            <button class="menu-item" data-seccion="notificaciones">
-              <span class="crm-nav-icon">🔔</span>
-              <span>Notificaciones</span>
-            </button>
-          </nav>
         </div>
 
-        <div class="crm-sidebar-footer">
-          <div class="crm-user-card">
-            <div class="crm-avatar">
-              ${obtenerInicial(usuario.nombre)}
-            </div>
+        <nav class="cliente-nav">
 
-            <div>
-              <strong>${escaparHTML(usuario.nombre)}</strong>
-              <span>${escaparHTML(usuario.correo)}</span>
-              <small>🟢 En línea</small>
-            </div>
+          <div class="cliente-nav-title">
+            Portal cliente
           </div>
 
           <button
-            id="cerrar-sesion-cliente"
-            class="crm-logout"
+            class="cliente-nav-item active"
+            data-section="inicio"
             type="button"
           >
-            <span>↩</span>
-            <span>Cerrar sesión</span>
+            <span class="cliente-nav-icon">⌂</span>
+            <span>Inicio</span>
           </button>
+
+          <button
+            class="cliente-nav-item"
+            data-section="proyectos"
+            type="button"
+          >
+            <span class="cliente-nav-icon">▣</span>
+            <span>Mis proyectos</span>
+          </button>
+
+          <button
+            class="cliente-nav-item"
+            data-section="documentos"
+            type="button"
+          >
+            <span class="cliente-nav-icon">▤</span>
+            <span>Documentos</span>
+          </button>
+
+          <button
+            class="cliente-nav-item"
+            data-section="calendario"
+            type="button"
+          >
+            <span class="cliente-nav-icon">▦</span>
+            <span>Calendario</span>
+          </button>
+
+          <button
+            class="cliente-nav-item"
+            data-section="mensajes"
+            type="button"
+          >
+            <span class="cliente-nav-icon">✉</span>
+            <span>Mensajes</span>
+            <span class="cliente-nav-badge">4</span>
+          </button>
+
+          <button
+            class="cliente-nav-item"
+            data-section="notificaciones"
+            type="button"
+          >
+            <span class="cliente-nav-icon">♢</span>
+            <span>Notificaciones</span>
+          </button>
+
+          <button
+            class="cliente-nav-item"
+            data-section="empresa"
+            type="button"
+          >
+            <span class="cliente-nav-icon">▥</span>
+            <span>Mi empresa</span>
+          </button>
+
+          <button
+            class="cliente-nav-item"
+            data-section="perfil"
+            type="button"
+          >
+            <span class="cliente-nav-icon">◉</span>
+            <span>Mi perfil</span>
+          </button>
+
+        </nav>
+
+        <!-- USUARIO -->
+
+        <div class="cliente-user">
+
+          <div class="cliente-user-avatar">
+            ${obtenerInicial(email)}
+          </div>
+
+          <div class="cliente-user-info">
+
+            <strong>
+              Cliente
+            </strong>
+
+            <span>
+              ${escaparHTML(email)}
+            </span>
+
+          </div>
+
         </div>
-      </aside>
 
-      <main class="crm-main">
-        <header class="crm-topbar">
-          <div>
-            <h1>Bienvenido/a, ${escaparHTML(usuario.nombre)}</h1>
-            <p>Gestiona tu información y comunícate con Karsan Digital.</p>
-          </div>
-
-          <div class="crm-topbar-actions">
-            <button
-              class="crm-icon-button"
-              type="button"
-              data-seccion-chat="notificaciones"
-              aria-label="Abrir notificaciones"
-            >
-              🔔
-            </button>
-
-            <div class="crm-profile">
-              <div class="crm-avatar">
-                ${obtenerInicial(usuario.nombre)}
-              </div>
-
-              <div>
-                <strong>${escaparHTML(usuario.nombre)}</strong>
-                <span>Cliente</span>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <section class="crm-client-kpis">
-          <article class="crm-client-kpi">
-            <div class="crm-kpi-icon azul">📅</div>
-            <div>
-              <span>Citas pendientes</span>
-              <strong id="cliente-total-citas">
-                ${obtenerCitasCliente(usuario).length}
-              </strong>
-              <small>Citas programadas</small>
-            </div>
-          </article>
-
-          <article class="crm-client-kpi">
-            <div class="crm-kpi-icon naranja">🔔</div>
-            <div>
-              <span>Notificaciones</span>
-              <strong>0</strong>
-              <small>Mensajes nuevos</small>
-            </div>
-          </article>
-
-          <article class="crm-client-kpi">
-            <div class="crm-kpi-icon verde">🤖</div>
-            <div>
-              <span>Asistente virtual</span>
-              <strong>Activo</strong>
-              <small>Disponible ahora</small>
-            </div>
-          </article>
-        </section>
-
-        <section class="crm-card crm-workspace crm-client-content">
-          <div id="contenido-cliente">
-            ${crearInicioCliente(usuario)}
-          </div>
-        </section>
+        <!-- LOGOUT -->
 
         <button
-          class="crm-chat-fab"
+          class="cliente-logout"
+          id="btnCerrarSesionCliente"
           type="button"
-          data-seccion-chat="chatbot"
-          aria-label="Abrir chatbot"
         >
-          🤖
+          <span>↪</span>
+          <span>Cerrar sesión</span>
         </button>
+
+      </aside>
+
+      <!-- =================================================
+           CONTENIDO PRINCIPAL
+           ================================================= -->
+
+      <main class="cliente-main">
+
+        <!-- HEADER -->
+
+        <header class="cliente-header">
+
+          <div class="cliente-header-left">
+
+            <button
+              class="cliente-mobile-menu"
+              id="btnMenuCliente"
+              type="button"
+              aria-label="Abrir menú"
+            >
+              ☰
+            </button>
+
+            <div>
+
+              <div class="cliente-breadcrumb">
+                Karsan Digital / Portal cliente
+              </div>
+
+              <div class="cliente-header-title">
+                Portal del cliente
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="cliente-header-actions">
+
+            <button
+              class="cliente-notification-button"
+              id="btnNotificacionesCliente"
+              type="button"
+              title="Notificaciones"
+            >
+              ♢
+              <span class="cliente-notification-dot"></span>
+            </button>
+
+            <div class="cliente-header-avatar">
+              ${obtenerInicial(email)}
+            </div>
+
+          </div>
+
+        </header>
+
+        <!-- CONTENIDO -->
+
+        <section
+          class="cliente-content"
+          id="contenidoCliente"
+        ></section>
+
       </main>
+
     </div>
-  `
+  `;
 
-  activarDashboardCliente(app, usuario)
+  configurarEventosCliente(app, email);
+
+  mostrarInicioCliente(app, email);
 }
 
-function activarDashboardCliente(
-  app: HTMLDivElement,
-  usuario: UsuarioActivo,
+// =========================================================
+// EVENTOS GENERALES
+// =========================================================
+
+function configurarEventosCliente(
+  app: HTMLElement,
+  email: string
 ): void {
-  const botonCerrar =
-    document.querySelector<HTMLButtonElement>(
-      '#cerrar-sesion-cliente',
-    )
 
-  const botonesMenu =
-    document.querySelectorAll<HTMLButtonElement>(
-      '.menu-item',
-    )
+  app.addEventListener("click", (evento) => {
 
-  botonCerrar?.addEventListener('click', () => {
-    localStorage.removeItem('usuarioActivo')
-    mostrarLogin(app)
-  })
+    const objetivo = evento.target as HTMLElement;
 
-  botonesMenu.forEach((boton) => {
-    boton.addEventListener('click', () => {
-      botonesMenu.forEach((item) => {
-        item.classList.remove('active')
-      })
+    const botonSeccion = objetivo.closest(
+      "[data-section]"
+    ) as HTMLElement | null;
 
-      boton.classList.add('active')
+    if (!botonSeccion) {
+      return;
+    }
 
-      const seccion = boton.dataset.seccion ?? 'inicio'
-      mostrarSeccionCliente(seccion, usuario)
-    })
-  })
+    const seccion = botonSeccion.dataset.section;
 
-  document
-    .querySelectorAll<HTMLButtonElement>('[data-seccion-chat]')
-    .forEach((boton) => {
-      boton.addEventListener('click', () => {
-        const seccion = boton.dataset.seccionChat ?? 'chatbot'
-        mostrarSeccionCliente(seccion, usuario)
+    if (!seccion) {
+      return;
+    }
 
-        botonesMenu.forEach((item) => {
-          item.classList.toggle(
-            'active',
-            item.dataset.seccion === seccion,
-          )
-        })
-      })
-    })
+    app
+      .querySelectorAll(".cliente-nav-item")
+      .forEach((elemento) => {
+        elemento.classList.remove("active");
+      });
 
-  activarBotonInicioChatbot(usuario)
+    if (
+      botonSeccion.classList.contains(
+        "cliente-nav-item"
+      )
+    ) {
+      botonSeccion.classList.add("active");
+    }
+
+    mostrarSeccionCliente(
+      app,
+      seccion,
+      email
+    );
+
+    const sidebar =
+      document.getElementById(
+        "clienteSidebar"
+      );
+
+    sidebar?.classList.remove("open");
+  });
+
+  // =====================================================
+  // MENÚ MÓVIL
+  // =====================================================
+
+  const btnMenu =
+    document.getElementById(
+      "btnMenuCliente"
+    );
+
+  btnMenu?.addEventListener(
+    "click",
+    () => {
+
+      const sidebar =
+        document.getElementById(
+          "clienteSidebar"
+        );
+
+      sidebar?.classList.toggle("open");
+    }
+  );
+
+  // =====================================================
+  // CERRAR SESIÓN
+  // =====================================================
+
+  const btnCerrar =
+    document.getElementById(
+      "btnCerrarSesionCliente"
+    );
+
+  btnCerrar?.addEventListener(
+    "click",
+    () => {
+
+      localStorage.removeItem(
+        "karsan_usuario"
+      );
+
+      window.location.reload();
+    }
+  );
+
+  // =====================================================
+  // NOTIFICACIONES
+  // =====================================================
+
+  const btnNotificaciones =
+    document.getElementById(
+      "btnNotificacionesCliente"
+    );
+
+  btnNotificaciones?.addEventListener(
+    "click",
+    () => {
+
+      app
+        .querySelectorAll(".cliente-nav-item")
+        .forEach((elemento) => {
+          elemento.classList.remove("active");
+        });
+
+      const boton =
+        app.querySelector(
+          '[data-section="notificaciones"]'
+        );
+
+      boton?.classList.add("active");
+
+      mostrarNotificaciones(app);
+    }
+  );
+
+  // =====================================================
+  // DESCARGAR DOCUMENTOS
+  // =====================================================
+
+  app.addEventListener(
+    "click",
+    (evento) => {
+
+      const objetivo =
+        evento.target as HTMLElement;
+
+      const botonDescargar =
+        objetivo.closest(
+          "[data-documento-id]"
+        ) as HTMLElement | null;
+
+      if (!botonDescargar) {
+        return;
+      }
+
+      const id =
+        botonDescargar.dataset.documentoId;
+
+      if (!id) {
+        return;
+      }
+
+      window.open(
+        `http://localhost:3002/api/documentos/${id}/descargar`,
+        "_blank"
+      );
+    }
+  );
 }
+
+// =========================================================
+// CAMBIAR SECCIÓN
+// =========================================================
 
 function mostrarSeccionCliente(
+  app: HTMLElement,
   seccion: string,
-  usuario: UsuarioActivo,
+  email: string
 ): void {
+
+  switch (seccion) {
+
+    case "inicio":
+      mostrarInicioCliente(
+        app,
+        email
+      );
+      break;
+
+    case "proyectos":
+      mostrarProyectos(app);
+      break;
+
+    case "documentos":
+      mostrarDocumentos(
+        app,
+        email
+      );
+      break;
+
+    case "calendario": {
+
+      const contenido =
+        document.getElementById(
+          "contenidoCliente"
+        );
+
+      if (!contenido) {
+        return;
+      }
+
+      contenido.innerHTML = `
+        <div class="cliente-page-heading">
+
+          <div class="cliente-page-label">
+            CALENDARIO
+          </div>
+
+          <h1>
+            Mi calendario
+          </h1>
+
+          <p>
+            Revisa tus reuniones, actividades
+            y fechas importantes.
+          </p>
+
+        </div>
+
+        <div class="cliente-card">
+          <div id="calendarioCliente"></div>
+        </div>
+      `;
+
+      const calendario =
+        document.getElementById(
+          "calendarioCliente"
+        );
+
+      if (calendario) {
+
+        mostrarCalendario(
+          calendario,
+          "cliente",
+          email
+        );
+      }
+
+      break;
+    }
+
+    case "mensajes":
+      mostrarMensajes(app);
+      break;
+
+    case "notificaciones":
+      mostrarNotificaciones(app);
+      break;
+
+    case "empresa":
+      mostrarEmpresa(app);
+      break;
+
+    case "perfil":
+      mostrarPerfil(
+        app,
+        email
+      );
+      break;
+
+    default:
+      mostrarInicioCliente(
+        app,
+        email
+      );
+      break;
+  }
+}
+
+// =========================================================
+// INICIO
+// =========================================================
+
+function mostrarInicioCliente(
+  app: HTMLElement,
+  email: string
+): void {
+
   const contenido =
-    document.querySelector<HTMLDivElement>(
-      '#contenido-cliente',
-    )
+    document.getElementById(
+      "contenidoCliente"
+    );
 
   if (!contenido) {
-    return
+    return;
   }
 
-  if (seccion === 'inicio') {
-    contenido.innerHTML = crearInicioCliente(usuario)
-    activarBotonInicioChatbot(usuario)
-    return
-  }
+  contenido.innerHTML = `
 
-  if (seccion === 'perfil') {
-    contenido.innerHTML = `
-      <div class="perfil-cliente">
-        <h2>Mi perfil</h2>
+    <div class="cliente-page-heading">
 
-        <div class="perfil-datos">
-          <p>
-            <strong>Nombre:</strong>
-            ${escaparHTML(usuario.nombre)}
-          </p>
-
-          <p>
-            <strong>Correo:</strong>
-            ${escaparHTML(usuario.correo)}
-          </p>
-
-          <p>
-            <strong>Rol:</strong>
-            Cliente
-          </p>
-        </div>
+      <div class="cliente-page-label">
+        PANEL DEL CLIENTE
       </div>
-    `
-    return
-  }
 
-  if (seccion === 'citas') {
-    const citas = obtenerCitasCliente(usuario)
-    const hoy = new Date()
+      <h1>
+        Bienvenido a Karsan Digital
+      </h1>
 
-    contenido.innerHTML = crearModuloCitas(
-      citas,
-      hoy.getFullYear(),
-      hoy.getMonth(),
-    )
+      <p>
+        Gestiona tus proyectos, documentos
+        y comunicación desde un solo lugar.
+      </p>
 
-    activarCalendarioCitas(
-      usuario,
-      citas,
-      hoy.getFullYear(),
-      hoy.getMonth(),
-    )
+    </div>
 
-    return
-  }
+    <!-- ESTADÍSTICAS -->
 
-  if (seccion === 'mensajes') {
-    contenido.innerHTML = `
-      <div class="perfil-cliente">
-        <h2>Mensajes</h2>
-        <p>
-          Aquí podrás conversar con tu asesor y revisar
-          tus conversaciones recientes.
-        </p>
+    <div class="cliente-stats">
 
-        <div class="empty-state">
-          <h3>No tienes mensajes nuevos</h3>
-          <p>
-            Cuando un asesor te escriba, el mensaje aparecerá aquí.
-          </p>
+      <div class="cliente-stat">
+
+        <div class="cliente-stat-icon">
+          ▣
         </div>
-      </div>
-    `
-    return
-  }
 
-  if (seccion === 'documentos') {
-    contenido.innerHTML = `
-      <div class="perfil-cliente">
-        <h2>Documentos</h2>
-        <p>
-          Consulta tus contratos, cotizaciones y archivos compartidos.
-        </p>
+        <div class="cliente-stat-info">
 
-        <div class="empty-state">
-          <h3>No hay documentos disponibles</h3>
-          <p>
-            Los archivos enviados por Karsan Digital aparecerán aquí.
-          </p>
+          <span>
+            Proyectos
+          </span>
+
+          <strong>
+            4
+          </strong>
+
         </div>
+
       </div>
-    `
-    return
-  }
 
-  if (seccion === 'progreso') {
-    contenido.innerHTML = `
-      <div class="perfil-cliente">
-        <h2>Mi progreso</h2>
-        <p>
-          Revisa el estado actual de tu proceso con Karsan Digital.
-        </p>
+      <div class="cliente-stat">
 
-        <div class="cliente-progreso">
-          <div class="cliente-progreso-pasos">
-            <div class="cliente-paso completado">
-              <span>✓</span>
-              <p>Registro</p>
-            </div>
+        <div class="cliente-stat-icon">
+          ◷
+        </div>
 
-            <div class="cliente-paso completado">
-              <span>✓</span>
-              <p>Solicitud</p>
-            </div>
+        <div class="cliente-stat-info">
 
-            <div class="cliente-paso activo">
-              <span>3</span>
-              <p>Atención</p>
-            </div>
+          <span>
+            En proceso
+          </span>
 
-            <div class="cliente-paso">
-              <span>4</span>
-              <p>Finalizado</p>
-            </div>
+          <strong>
+            2
+          </strong>
+
+        </div>
+
+      </div>
+
+      <div class="cliente-stat">
+
+        <div class="cliente-stat-icon">
+          ▤
+        </div>
+
+        <div class="cliente-stat-info">
+
+          <span>
+            Documentos
+          </span>
+
+          <strong id="totalDocumentosInicio">
+            0
+          </strong>
+
+        </div>
+
+      </div>
+
+      <div class="cliente-stat">
+
+        <div class="cliente-stat-icon">
+          ✉
+        </div>
+
+        <div class="cliente-stat-info">
+
+          <span>
+            Mensajes
+          </span>
+
+          <strong>
+            4
+          </strong>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- COLUMNAS -->
+
+    <div class="cliente-columns">
+
+      <!-- PROYECTOS -->
+
+      <div class="cliente-card">
+
+        <div class="cliente-card-header">
+
+          <div>
+
+            <span class="cliente-card-label">
+              ACTIVIDAD
+            </span>
+
+            <h2>
+              Mis proyectos
+            </h2>
+
           </div>
-        </div>
-      </div>
-    `
-    return
-  }
 
-  if (seccion === 'chatbot') {
-    contenido.innerHTML = crearModuloChatbot()
-    activarModuloChatbot()
-    return
-  }
-
-  if (seccion === 'configuracion') {
-    contenido.innerHTML = `
-      <div class="perfil-cliente">
-        <h2>Configuración</h2>
-        <p>
-          Administra las preferencias de tu cuenta.
-        </p>
-
-        <div class="perfil-datos">
-          <p>
-            <strong>Correo:</strong>
-            ${escaparHTML(usuario.correo)}
-          </p>
-
-          <p>
-            <strong>Estado:</strong>
-            🟢 En línea
-          </p>
-
-          <button class="btn-outline" type="button">
-            Cambiar contraseña
+          <button
+            class="cliente-text-button"
+            data-section="proyectos"
+            type="button"
+          >
+            Ver todos
           </button>
+
         </div>
+
+        <div class="cliente-project-list">
+
+          <div class="cliente-project-item">
+
+            <div class="cliente-project-icon">
+              W
+            </div>
+
+            <div class="cliente-project-info">
+
+              <strong>
+                Diseño de página web
+              </strong>
+
+              <span>
+                En desarrollo
+              </span>
+
+            </div>
+
+            <div class="cliente-status cliente-status-process">
+              En proceso
+            </div>
+
+          </div>
+
+          <div class="cliente-project-item">
+
+            <div class="cliente-project-icon">
+              M
+            </div>
+
+            <div class="cliente-project-info">
+
+              <strong>
+                Campaña de marketing
+              </strong>
+
+              <span>
+                Revisión
+              </span>
+
+            </div>
+
+            <div class="cliente-status cliente-status-review">
+              Revisión
+            </div>
+
+          </div>
+
+          <div class="cliente-project-item">
+
+            <div class="cliente-project-icon">
+              R
+            </div>
+
+            <div class="cliente-project-info">
+
+              <strong>
+                Gestión de redes sociales
+              </strong>
+
+              <span>
+                Activo
+              </span>
+
+            </div>
+
+            <div class="cliente-status cliente-status-active">
+              Activo
+            </div>
+
+          </div>
+
+        </div>
+
       </div>
-    `
-    return
-  }
 
-  if (seccion === 'notificaciones') {
-    contenido.innerHTML = `
-      <div class="empty-state">
-        <h2>Notificaciones</h2>
-        <p>
-          Aquí aparecerán las confirmaciones y novedades
-          relacionadas con tus citas.
-        </p>
+      <!-- ACTIVIDAD -->
+
+      <div class="cliente-card">
+
+        <div class="cliente-card-header">
+
+          <div>
+
+            <span class="cliente-card-label">
+              RECIENTE
+            </span>
+
+            <h2>
+              Actividad reciente
+            </h2>
+
+          </div>
+
+        </div>
+
+        <div class="cliente-activity-list">
+
+          <div class="cliente-activity-item">
+
+            <div class="cliente-activity-dot"></div>
+
+            <div>
+
+              <strong>
+                Documento recibido
+              </strong>
+
+              <span>
+                Hace 2 horas
+              </span>
+
+            </div>
+
+          </div>
+
+          <div class="cliente-activity-item">
+
+            <div class="cliente-activity-dot"></div>
+
+            <div>
+
+              <strong>
+                Proyecto actualizado
+              </strong>
+
+              <span>
+                Ayer
+              </span>
+
+            </div>
+
+          </div>
+
+          <div class="cliente-activity-item">
+
+            <div class="cliente-activity-dot"></div>
+
+            <div>
+
+              <strong>
+                Nuevo mensaje del asesor
+              </strong>
+
+              <span>
+                Hace 2 días
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
       </div>
-    `
-  }
-}
 
-function activarBotonInicioChatbot(
-  usuario: UsuarioActivo,
-): void {
-  const abrirSeccion = (seccion: string): void => {
-    mostrarSeccionCliente(seccion, usuario)
+    </div>
 
-    document
-      .querySelectorAll<HTMLButtonElement>('.menu-item')
-      .forEach((item) => {
-        item.classList.toggle(
-          'active',
-          item.dataset.seccion === seccion,
-        )
-      })
-  }
+    <!-- ACCIONES RÁPIDAS -->
 
-  document
-    .querySelector<HTMLButtonElement>('#inicio-abrir-chatbot')
-    ?.addEventListener('click', () => abrirSeccion('chatbot'))
+    <div class="cliente-card">
 
-  document
-    .querySelector<HTMLButtonElement>(
-      '#inicio-abrir-chatbot-secundario',
-    )
-    ?.addEventListener('click', () => abrirSeccion('chatbot'))
+      <div class="cliente-card-header">
 
-  document
-    .querySelector<HTMLButtonElement>('#inicio-ver-citas')
-    ?.addEventListener('click', () => abrirSeccion('citas'))
-
-  document
-    .querySelector<HTMLButtonElement>('#inicio-ver-perfil')
-    ?.addEventListener('click', () => abrirSeccion('perfil'))
-
-  document
-    .querySelector<HTMLButtonElement>('#inicio-ver-notificaciones')
-    ?.addEventListener('click', () =>
-      abrirSeccion('notificaciones'),
-    )
-}
-
-function crearInicioCliente(
-  usuario: UsuarioActivo,
-): string {
-  const citas = obtenerCitasCliente(usuario)
-
-  const proximaCita = citas.find(
-    (cita) =>
-      cita.estado === 'Pendiente' ||
-      cita.estado === 'Confirmada',
-  )
-
-  const asesor =
-    proximaCita?.asesorNombre?.trim() || 'Por asignar'
-
-  return `
-    <div class="inicio-cliente">
-      <section class="cliente-bienvenida">
         <div>
-          <span class="cliente-bienvenida-etiqueta">
-            Panel del cliente
+
+          <span class="cliente-card-label">
+            ACCESO RÁPIDO
           </span>
 
           <h2>
-            ¡Hola, ${escaparHTML(usuario.nombre)}! 👋
+            ¿Qué necesitas hacer?
+          </h2>
+
+        </div>
+
+      </div>
+
+      <div class="cliente-quick-actions">
+
+        <button
+          class="cliente-quick-action"
+          data-section="documentos"
+          type="button"
+        >
+
+          <span class="cliente-quick-action-icon">
+            ↑
+          </span>
+
+          <strong>
+            Subir documento
+          </strong>
+
+          <small>
+            Envía un archivo al administrador.
+          </small>
+
+        </button>
+
+        <button
+          class="cliente-quick-action"
+          data-section="documentos"
+          type="button"
+        >
+
+          <span class="cliente-quick-action-icon">
+            ▣
+          </span>
+
+          <strong>
+            Subir comprobante
+          </strong>
+
+          <small>
+            Envía tu comprobante de pago.
+          </small>
+
+        </button>
+
+        <button
+          class="cliente-quick-action"
+          data-section="mensajes"
+          type="button"
+        >
+
+          <span class="cliente-quick-action-icon">
+            ✉
+          </span>
+
+          <strong>
+            Contactar asesor
+          </strong>
+
+          <small>
+            Envía un mensaje a Karsan Digital.
+          </small>
+
+        </button>
+
+        <button
+          class="cliente-quick-action"
+          data-section="calendario"
+          type="button"
+        >
+
+          <span class="cliente-quick-action-icon">
+            ▦
+          </span>
+
+          <strong>
+            Ver calendario
+          </strong>
+
+          <small>
+            Revisa tus actividades y reuniones.
+          </small>
+
+        </button>
+
+      </div>
+
+    </div>
+  `;
+
+  cargarCantidadDocumentos(email);
+}
+
+// =========================================================
+// PROYECTOS
+// =========================================================
+
+function mostrarProyectos(
+  app: HTMLElement
+): void {
+
+  const contenido =
+    document.getElementById(
+      "contenidoCliente"
+    );
+
+  if (!contenido) {
+    return;
+  }
+
+  contenido.innerHTML = `
+
+    <div class="cliente-page-heading">
+
+      <div class="cliente-page-label">
+        PROYECTOS
+      </div>
+
+      <h1>
+        Mis proyectos
+      </h1>
+
+      <p>
+        Consulta el estado de los proyectos
+        gestionados por Karsan Digital.
+      </p>
+
+    </div>
+
+    <div class="cliente-card">
+
+      <div class="cliente-card-header">
+
+        <div>
+
+          <span class="cliente-card-label">
+            MIS PROYECTOS
+          </span>
+
+          <h2>
+            Proyectos actuales
+          </h2>
+
+        </div>
+
+      </div>
+
+      <div class="cliente-project-list">
+
+        <div class="cliente-project-item">
+
+          <div class="cliente-project-icon">
+            W
+          </div>
+
+          <div class="cliente-project-info">
+
+            <strong>
+              Diseño de página web
+            </strong>
+
+            <span>
+              Proyecto de desarrollo web
+            </span>
+
+          </div>
+
+          <div class="cliente-status cliente-status-process">
+            En proceso
+          </div>
+
+        </div>
+
+        <div class="cliente-project-item">
+
+          <div class="cliente-project-icon">
+            M
+          </div>
+
+          <div class="cliente-project-info">
+
+            <strong>
+              Campaña de marketing
+            </strong>
+
+            <span>
+              Campaña digital
+            </span>
+
+          </div>
+
+          <div class="cliente-status cliente-status-review">
+            Revisión
+          </div>
+
+        </div>
+
+        <div class="cliente-project-item">
+
+          <div class="cliente-project-icon">
+            R
+          </div>
+
+          <div class="cliente-project-info">
+
+            <strong>
+              Gestión de redes sociales
+            </strong>
+
+            <span>
+              Administración de redes
+            </span>
+
+          </div>
+
+          <div class="cliente-status cliente-status-active">
+            Activo
+          </div>
+
+        </div>
+
+        <div class="cliente-project-item">
+
+          <div class="cliente-project-icon">
+            B
+          </div>
+
+          <div class="cliente-project-info">
+
+            <strong>
+              Branding empresarial
+            </strong>
+
+            <span>
+              Identidad visual
+            </span>
+
+          </div>
+
+          <div class="cliente-status cliente-status-active">
+            Activo
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  `;
+}
+
+// =========================================================
+// DOCUMENTOS
+// =========================================================
+
+function mostrarDocumentos(
+  app: HTMLElement,
+  email: string
+): void {
+
+  const contenido =
+    document.getElementById(
+      "contenidoCliente"
+    );
+
+  if (!contenido) {
+    return;
+  }
+
+  contenido.innerHTML = `
+
+    <div class="cliente-page-heading">
+
+      <div class="cliente-page-label">
+        DOCUMENTOS
+      </div>
+
+      <h1>
+        Mis documentos
+      </h1>
+
+      <p>
+        Sube documentos y comprobantes
+        para que el administrador pueda revisarlos.
+      </p>
+
+    </div>
+
+    <!-- SUBIR -->
+
+    <div class="cliente-card">
+
+      <div class="cliente-card-header">
+
+        <div>
+
+          <span class="cliente-card-label">
+            NUEVO DOCUMENTO
+          </span>
+
+          <h2>
+            Subir archivo
+          </h2>
+
+        </div>
+
+      </div>
+
+      <div class="cliente-upload-area">
+
+        <div class="cliente-upload-icon">
+          ↑
+        </div>
+
+        <h3>
+          Selecciona un archivo
+        </h3>
+
+        <p>
+          PDF, JPG, PNG, DOC, DOCX, XLS o XLSX.
+          Máximo 10 MB.
+        </p>
+
+        <input
+          type="file"
+          id="archivoDocumento"
+          accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
+          hidden
+        />
+
+        <button
+          type="button"
+          class="cliente-primary-button"
+          id="btnSeleccionarDocumento"
+        >
+          Seleccionar archivo
+        </button>
+
+        <div
+          id="nombreArchivoSeleccionado"
+          class="cliente-selected-file"
+        >
+          Ningún archivo seleccionado
+        </div>
+
+      </div>
+
+      <div class="cliente-form-group">
+
+        <label for="tipoDocumento">
+          Tipo de documento
+        </label>
+
+        <select id="tipoDocumento">
+
+          <option value="documento">
+            Documento
+          </option>
+
+          <option value="comprobante">
+            Comprobante de pago
+          </option>
+
+          <option value="transferencia">
+            Transferencia
+          </option>
+
+          <option value="factura">
+            Factura
+          </option>
+
+          <option value="contrato">
+            Contrato
+          </option>
+
+          <option value="otro">
+            Otro
+          </option>
+
+        </select>
+
+      </div>
+
+      <button
+        type="button"
+        class="cliente-primary-button"
+        id="btnSubirDocumento"
+      >
+        Subir documento
+      </button>
+
+      <div
+        id="mensajeSubidaDocumento"
+        class="cliente-upload-message"
+      ></div>
+
+    </div>
+
+    <!-- LISTA -->
+
+    <div class="cliente-card">
+
+      <div class="cliente-card-header">
+
+        <div>
+
+          <span class="cliente-card-label">
+            ARCHIVOS
+          </span>
+
+          <h2>
+            Documentos enviados
+          </h2>
+
+        </div>
+
+        <button
+          type="button"
+          class="cliente-text-button"
+          id="btnActualizarDocumentos"
+        >
+          Actualizar
+        </button>
+
+      </div>
+
+      <div id="listaDocumentosCliente">
+
+        <div class="cliente-empty">
+          Cargando documentos...
+        </div>
+
+      </div>
+
+    </div>
+  `;
+
+  configurarDocumentos(email);
+
+  cargarDocumentos(email);
+}
+
+// =========================================================
+// CONFIGURAR DOCUMENTOS
+// =========================================================
+
+function configurarDocumentos(
+  email: string
+): void {
+
+  const input =
+    document.getElementById(
+      "archivoDocumento"
+    ) as HTMLInputElement | null;
+
+  const btnSeleccionar =
+    document.getElementById(
+      "btnSeleccionarDocumento"
+    );
+
+  const nombreArchivo =
+    document.getElementById(
+      "nombreArchivoSeleccionado"
+    );
+
+  const btnSubir =
+    document.getElementById(
+      "btnSubirDocumento"
+    );
+
+  const btnActualizar =
+    document.getElementById(
+      "btnActualizarDocumentos"
+    );
+
+  btnSeleccionar?.addEventListener(
+    "click",
+    () => {
+      input?.click();
+    }
+  );
+
+  input?.addEventListener(
+    "change",
+    () => {
+
+      const archivo =
+        input.files?.[0];
+
+      if (!nombreArchivo) {
+        return;
+      }
+
+      nombreArchivo.textContent =
+        archivo
+          ? archivo.name
+          : "Ningún archivo seleccionado";
+    }
+  );
+
+  btnSubir?.addEventListener(
+    "click",
+    () => {
+
+      subirDocumento(
+        input,
+        email
+      );
+    }
+  );
+
+  btnActualizar?.addEventListener(
+    "click",
+    () => {
+
+      cargarDocumentos(email);
+    }
+  );
+}
+
+// =========================================================
+// SUBIR DOCUMENTO
+// =========================================================
+
+async function subirDocumento(
+  input: HTMLInputElement | null,
+  email: string
+): Promise<void> {
+
+  const mensaje =
+    document.getElementById(
+      "mensajeSubidaDocumento"
+    );
+
+  const tipo =
+    document.getElementById(
+      "tipoDocumento"
+    ) as HTMLSelectElement | null;
+
+  if (!input) {
+    return;
+  }
+
+  const archivo =
+    input.files?.[0];
+
+  if (!archivo) {
+
+    if (mensaje) {
+
+      mensaje.textContent =
+        "Selecciona un archivo primero.";
+
+      mensaje.className =
+        "cliente-upload-message error";
+    }
+
+    return;
+  }
+
+  const extensionesPermitidas = [
+    "pdf",
+    "jpg",
+    "jpeg",
+    "png",
+    "doc",
+    "docx",
+    "xls",
+    "xlsx"
+  ];
+
+  const extension =
+    archivo.name
+      .split(".")
+      .pop()
+      ?.toLowerCase();
+
+  if (
+    !extension ||
+    !extensionesPermitidas.includes(
+      extension
+    )
+  ) {
+
+    if (mensaje) {
+
+      mensaje.textContent =
+        "El tipo de archivo no está permitido.";
+
+      mensaje.className =
+        "cliente-upload-message error";
+    }
+
+    return;
+  }
+
+  if (
+    archivo.size >
+    10 * 1024 * 1024
+  ) {
+
+    if (mensaje) {
+
+      mensaje.textContent =
+        "El archivo no puede superar los 10 MB.";
+
+      mensaje.className =
+        "cliente-upload-message error";
+    }
+
+    return;
+  }
+
+  const formulario =
+    new FormData();
+
+  formulario.append(
+    "archivo",
+    archivo
+  );
+
+  formulario.append(
+    "tipo",
+    tipo?.value || "documento"
+  );
+
+  formulario.append(
+    "correo",
+    email
+  );
+
+  // Recuperar usuario
+  try {
+
+    const usuarioGuardado =
+      localStorage.getItem(
+        "karsan_usuario"
+      );
+
+    if (usuarioGuardado) {
+
+      const usuario =
+        JSON.parse(
+          usuarioGuardado
+        );
+
+      if (usuario?.id) {
+
+        formulario.append(
+          "usuarioId",
+          String(usuario.id)
+        );
+      }
+    }
+
+  } catch {
+    // No hacer nada
+  }
+
+  try {
+
+    if (mensaje) {
+
+      mensaje.textContent =
+        "Subiendo documento...";
+
+      mensaje.className =
+        "cliente-upload-message";
+    }
+
+    const respuesta =
+      await fetch(
+        "http://localhost:3002/api/documentos/subir",
+        {
+          method: "POST",
+          body: formulario
+        }
+      );
+
+    const datos =
+      await respuesta.json();
+
+    if (!respuesta.ok) {
+
+      throw new Error(
+        datos?.mensaje ||
+        datos?.error ||
+        "No se pudo subir el documento."
+      );
+    }
+
+    if (mensaje) {
+
+      mensaje.textContent =
+        "Documento subido correctamente.";
+
+      mensaje.className =
+        "cliente-upload-message success";
+    }
+
+    input.value = "";
+
+    const nombreArchivo =
+      document.getElementById(
+        "nombreArchivoSeleccionado"
+      );
+
+    if (nombreArchivo) {
+
+      nombreArchivo.textContent =
+        "Ningún archivo seleccionado";
+    }
+
+    await cargarDocumentos(email);
+
+    await cargarCantidadDocumentos(email);
+
+  } catch (error) {
+
+    console.error(
+      "Error al subir documento:",
+      error
+    );
+
+    if (mensaje) {
+
+      mensaje.textContent =
+        error instanceof Error
+          ? error.message
+          : "Error al subir el documento.";
+
+      mensaje.className =
+        "cliente-upload-message error";
+    }
+  }
+}
+
+// =========================================================
+// CARGAR DOCUMENTOS
+// =========================================================
+
+async function cargarDocumentos(
+  email: string
+): Promise<void> {
+
+  const lista =
+    document.getElementById(
+      "listaDocumentosCliente"
+    );
+
+  if (!lista) {
+    return;
+  }
+
+  lista.innerHTML = `
+    <div class="cliente-empty">
+      Cargando documentos...
+    </div>
+  `;
+
+  try {
+
+    const respuesta =
+      await fetch(
+        "http://localhost:3002/api/documentos"
+      );
+
+    if (!respuesta.ok) {
+
+      throw new Error(
+        "No se pudieron cargar los documentos."
+      );
+    }
+
+    const datos =
+      await respuesta.json();
+
+    let documentos: Documento[] =
+      Array.isArray(datos)
+        ? datos
+        : Array.isArray(datos?.documentos)
+          ? datos.documentos
+          : [];
+
+    let usuarioId: number | null = null;
+
+    try {
+
+      const usuarioGuardado =
+        localStorage.getItem(
+          "karsan_usuario"
+        );
+
+      if (usuarioGuardado) {
+
+        const usuario =
+          JSON.parse(
+            usuarioGuardado
+          );
+
+        if (usuario?.id) {
+
+          usuarioId =
+            Number(usuario.id);
+        }
+      }
+
+    } catch {
+
+      usuarioId = null;
+    }
+
+    if (usuarioId !== null) {
+
+      const documentosUsuario =
+        documentos.filter(
+          (documento) =>
+            Number(documento.usuarioId) ===
+            usuarioId
+        );
+
+      if (
+        documentosUsuario.length > 0
+      ) {
+
+        documentos =
+          documentosUsuario;
+
+      } else {
+
+        documentos =
+          documentos.filter(
+            (documento) =>
+              String(
+                documento.correo || ""
+              ).toLowerCase() ===
+              email.toLowerCase()
+          );
+      }
+
+    } else {
+
+      documentos =
+        documentos.filter(
+          (documento) =>
+            String(
+              documento.correo || ""
+            ).toLowerCase() ===
+            email.toLowerCase()
+        );
+    }
+
+    if (
+      documentos.length === 0
+    ) {
+
+      lista.innerHTML = `
+        <div class="cliente-empty">
+
+          <div class="cliente-empty-icon">
+            ▤
+          </div>
+
+          <strong>
+            No tienes documentos
+          </strong>
+
+          <span>
+            Los documentos que subas aparecerán aquí.
+          </span>
+
+        </div>
+      `;
+
+      return;
+    }
+
+    lista.innerHTML =
+      documentos
+        .map(
+          (documento) =>
+            crearDocumentoHTML(
+              documento
+            )
+        )
+        .join("");
+
+  } catch (error) {
+
+    console.error(
+      "Error cargando documentos:",
+      error
+    );
+
+    lista.innerHTML = `
+      <div class="cliente-empty">
+
+        <strong>
+          No se pudieron cargar los documentos
+        </strong>
+
+        <span>
+          Verifica que el servidor esté funcionando.
+        </span>
+
+      </div>
+    `;
+  }
+}
+
+// =========================================================
+// HTML DE DOCUMENTO
+// =========================================================
+
+function crearDocumentoHTML(
+  documento: Documento
+): string {
+
+  const nombre =
+    documento.nombre ||
+    documento.nombreArchivo ||
+    documento.archivo ||
+    "Documento";
+
+  const tipo =
+    documento.tipo ||
+    "Documento";
+
+  const fecha =
+    documento.fecha ||
+    documento.createdAt ||
+    "";
+
+  return `
+
+    <div class="cliente-document-item">
+
+      <div class="cliente-document-icon">
+        📄
+      </div>
+
+      <div class="cliente-document-information">
+
+        <strong>
+          ${escaparHTML(nombre)}
+        </strong>
+
+        <span>
+          ${escaparHTML(tipo)}
+          ${
+            fecha
+              ? " · " +
+                formatearFecha(fecha)
+              : ""
+          }
+        </span>
+
+      </div>
+
+      <button
+        class="cliente-document-download"
+        type="button"
+        data-documento-id="${documento.id}"
+      >
+        Descargar
+      </button>
+
+    </div>
+  `;
+}
+
+// =========================================================
+// CONTAR DOCUMENTOS
+// =========================================================
+
+async function cargarCantidadDocumentos(
+  email: string
+): Promise<void> {
+
+  const contador =
+    document.getElementById(
+      "totalDocumentosInicio"
+    );
+
+  if (!contador) {
+    return;
+  }
+
+  try {
+
+    const respuesta =
+      await fetch(
+        "http://localhost:3002/api/documentos"
+      );
+
+    if (!respuesta.ok) {
+
+      throw new Error(
+        "Error cargando documentos"
+      );
+    }
+
+    const datos =
+      await respuesta.json();
+
+    let documentos: Documento[] =
+      Array.isArray(datos)
+        ? datos
+        : Array.isArray(datos?.documentos)
+          ? datos.documentos
+          : [];
+
+    let usuarioId: number | null = null;
+
+    try {
+
+      const usuarioGuardado =
+        localStorage.getItem(
+          "karsan_usuario"
+        );
+
+      if (usuarioGuardado) {
+
+        const usuario =
+          JSON.parse(
+            usuarioGuardado
+          );
+
+        if (usuario?.id) {
+
+          usuarioId =
+            Number(usuario.id);
+        }
+      }
+
+    } catch {
+
+      usuarioId = null;
+    }
+
+    if (usuarioId !== null) {
+
+      const porUsuario =
+        documentos.filter(
+          (documento) =>
+            Number(documento.usuarioId) ===
+            usuarioId
+        );
+
+      if (porUsuario.length > 0) {
+
+        documentos =
+          porUsuario;
+
+      } else {
+
+        documentos =
+          documentos.filter(
+            (documento) =>
+              String(
+                documento.correo || ""
+              ).toLowerCase() ===
+              email.toLowerCase()
+          );
+      }
+
+    } else {
+
+      documentos =
+        documentos.filter(
+          (documento) =>
+            String(
+              documento.correo || ""
+            ).toLowerCase() ===
+            email.toLowerCase()
+        );
+    }
+
+    contador.textContent =
+      String(documentos.length);
+
+  } catch {
+
+    contador.textContent =
+      "0";
+  }
+}
+
+// =========================================================
+// MENSAJES
+// =========================================================
+
+function mostrarMensajes(
+  app: HTMLElement
+): void {
+
+  const contenido =
+    document.getElementById(
+      "contenidoCliente"
+    );
+
+  if (!contenido) {
+    return;
+  }
+
+  contenido.innerHTML = `
+
+    <div class="cliente-page-heading">
+
+      <div class="cliente-page-label">
+        COMUNICACIÓN
+      </div>
+
+      <h1>
+        Mensajes
+      </h1>
+
+      <p>
+        Comunícate con tu asesor de Karsan Digital.
+      </p>
+
+    </div>
+
+    <div class="cliente-card">
+
+      <div class="cliente-card-header">
+
+        <div>
+
+          <span class="cliente-card-label">
+            MENSAJES
+          </span>
+
+          <h2>
+            Comunicación con tu asesor
+          </h2>
+
+        </div>
+
+      </div>
+
+      <div class="cliente-message-list">
+
+        <div class="cliente-message-item">
+
+          <div class="cliente-message-avatar">
+            A
+          </div>
+
+          <div class="cliente-message-content">
+
+            <strong>
+              Asesor Karsan
+            </strong>
+
+            <p>
+              Hola, hemos actualizado el avance
+              de tu proyecto.
+            </p>
+
+            <span>
+              Hoy, 10:30
+            </span>
+
+          </div>
+
+        </div>
+
+        <div class="cliente-message-item">
+
+          <div class="cliente-message-avatar">
+            K
+          </div>
+
+          <div class="cliente-message-content">
+
+            <strong>
+              Karsan Digital
+            </strong>
+
+            <p>
+              Recuerda enviar el comprobante
+              de pago cuando esté disponible.
+            </p>
+
+            <span>
+              Ayer
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="cliente-message-form">
+
+        <textarea
+          id="mensajeCliente"
+          placeholder="Escribe tu mensaje..."
+          rows="4"
+        ></textarea>
+
+        <button
+          type="button"
+          class="cliente-primary-button"
+          id="btnEnviarMensaje"
+        >
+          Enviar mensaje
+        </button>
+
+        <div
+          id="mensajeEnviado"
+          class="cliente-upload-message"
+        ></div>
+
+      </div>
+
+    </div>
+  `;
+
+  const btnEnviar =
+    document.getElementById(
+      "btnEnviarMensaje"
+    );
+
+  btnEnviar?.addEventListener(
+    "click",
+    () => {
+
+      const textarea =
+        document.getElementById(
+          "mensajeCliente"
+        ) as HTMLTextAreaElement | null;
+
+      const confirmacion =
+        document.getElementById(
+          "mensajeEnviado"
+        );
+
+      if (!textarea) {
+        return;
+      }
+
+      if (!textarea.value.trim()) {
+
+        if (confirmacion) {
+
+          confirmacion.textContent =
+            "Escribe un mensaje antes de enviarlo.";
+
+          confirmacion.className =
+            "cliente-upload-message error";
+        }
+
+        return;
+      }
+
+      if (confirmacion) {
+
+        confirmacion.textContent =
+          "Mensaje enviado correctamente.";
+
+        confirmacion.className =
+          "cliente-upload-message success";
+      }
+
+      textarea.value = "";
+    }
+  );
+}
+
+// =========================================================
+// NOTIFICACIONES
+// =========================================================
+
+function mostrarNotificaciones(
+  app: HTMLElement
+): void {
+
+  const contenido =
+    document.getElementById(
+      "contenidoCliente"
+    );
+
+  if (!contenido) {
+    return;
+  }
+
+  contenido.innerHTML = `
+
+    <div class="cliente-page-heading">
+
+      <div class="cliente-page-label">
+        NOTIFICACIONES
+      </div>
+
+      <h1>
+        Notificaciones
+      </h1>
+
+      <p>
+        Revisa las novedades de tu cuenta.
+      </p>
+
+    </div>
+
+    <div class="cliente-card">
+
+      <div class="cliente-card-header">
+
+        <div>
+
+          <span class="cliente-card-label">
+            ACTIVIDAD
+          </span>
+
+          <h2>
+            Últimas notificaciones
+          </h2>
+
+        </div>
+
+      </div>
+
+      <div class="cliente-notification-list">
+
+        <div class="cliente-notification-item">
+
+          <div class="cliente-notification-icon">
+            ✓
+          </div>
+
+          <div>
+
+            <strong>
+              Proyecto actualizado
+            </strong>
+
+            <p>
+              El estado de tu proyecto cambió.
+            </p>
+
+            <span>
+              Hace 2 horas
+            </span>
+
+          </div>
+
+        </div>
+
+        <div class="cliente-notification-item">
+
+          <div class="cliente-notification-icon">
+            ▤
+          </div>
+
+          <div>
+
+            <strong>
+              Documento recibido
+            </strong>
+
+            <p>
+              Tu documento fue registrado correctamente.
+            </p>
+
+            <span>
+              Ayer
+            </span>
+
+          </div>
+
+        </div>
+
+        <div class="cliente-notification-item">
+
+          <div class="cliente-notification-icon">
+            ●
+          </div>
+
+          <div>
+
+            <strong>
+              Nueva actividad
+            </strong>
+
+            <p>
+              Tienes una nueva actividad pendiente.
+            </p>
+
+            <span>
+              Hace 2 días
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  `;
+}
+
+// =========================================================
+// MI EMPRESA
+// =========================================================
+
+function mostrarEmpresa(
+  app: HTMLElement
+): void {
+
+  const contenido =
+    document.getElementById(
+      "contenidoCliente"
+    );
+
+  if (!contenido) {
+    return;
+  }
+
+  contenido.innerHTML = `
+
+    <div class="cliente-page-heading">
+
+      <div class="cliente-page-label">
+        EMPRESA
+      </div>
+
+      <h1>
+        Mi empresa
+      </h1>
+
+      <p>
+        Información y redes sociales conectadas.
+      </p>
+
+    </div>
+
+    <div class="cliente-company-grid">
+
+      <!-- INFORMACIÓN -->
+
+      <div class="cliente-card">
+
+        <div class="cliente-card-header">
+
+          <div>
+
+            <span class="cliente-card-label">
+              INFORMACIÓN
+            </span>
+
+            <h2>
+              Mi empresa
+            </h2>
+
+          </div>
+
+        </div>
+
+        <div class="cliente-company-info">
+
+          <div class="cliente-company-row">
+
+            <span>
+              Estado
+            </span>
+
+            <strong class="cliente-status cliente-status-active">
+              Cuenta activa
+            </strong>
+
+          </div>
+
+          <div class="cliente-company-row">
+
+            <span>
+              Servicio
+            </span>
+
+            <strong>
+              Karsan Digital
+            </strong>
+
+          </div>
+
+          <div class="cliente-company-row">
+
+            <span>
+              Gestión
+            </span>
+
+            <strong>
+              Marketing digital
+            </strong>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- REDES -->
+
+      <div class="cliente-card">
+
+        <div class="cliente-card-header">
+
+          <div>
+
+            <span class="cliente-card-label">
+              REDES SOCIALES
+            </span>
+
+            <h2>
+              Redes conectadas
+            </h2>
+
+          </div>
+
+        </div>
+
+        <div class="cliente-social-list">
+
+          <div class="cliente-social-item">
+
+            <div class="cliente-social-name">
+
+              <div class="cliente-social-icon">
+                I
+              </div>
+
+              Instagram
+
+            </div>
+
+            <span class="cliente-social-connected">
+              ● Conectado
+            </span>
+
+          </div>
+
+          <div class="cliente-social-item">
+
+            <div class="cliente-social-name">
+
+              <div class="cliente-social-icon">
+                F
+              </div>
+
+              Facebook
+
+            </div>
+
+            <span class="cliente-social-connected">
+              ● Conectado
+            </span>
+
+          </div>
+
+          <div class="cliente-social-item">
+
+            <div class="cliente-social-name">
+
+              <div class="cliente-social-icon">
+                T
+              </div>
+
+              TikTok
+
+            </div>
+
+            <span class="cliente-social-connected">
+              ● Conectado
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  `;
+}
+
+// =========================================================
+// MI PERFIL
+// =========================================================
+
+function mostrarPerfil(
+  app: HTMLElement,
+  email: string
+): void {
+
+  const contenido =
+    document.getElementById(
+      "contenidoCliente"
+    );
+
+  if (!contenido) {
+    return;
+  }
+
+  contenido.innerHTML = `
+
+    <div class="cliente-page-heading">
+
+      <div class="cliente-page-label">
+        PERFIL
+      </div>
+
+      <h1>
+        Mi perfil
+      </h1>
+
+      <p>
+        Información de tu cuenta de cliente.
+      </p>
+
+    </div>
+
+    <div class="cliente-card">
+
+      <div class="cliente-profile-header">
+
+        <div class="cliente-profile-avatar">
+          ${obtenerInicial(email)}
+        </div>
+
+        <div>
+
+          <h2>
+            Cliente Karsan
           </h2>
 
           <p>
-            Revisa tus citas, consulta tus novedades y
-            comunícate con el equipo de Karsan Digital.
+            Cuenta de cliente
           </p>
+
         </div>
 
-        <button
-          id="inicio-abrir-chatbot"
-          class="btn-primary"
-          type="button"
-        >
-          🤖 Hablar con el asistente
-        </button>
-      </section>
+      </div>
 
-      <section class="cliente-resumen-grid">
-        <article class="cliente-resumen-card">
-          <div class="cliente-resumen-icono azul">📅</div>
-          <div>
-            <span>Próxima cita</span>
-            ${
-              proximaCita
-                ? `
-                  <strong>${formatearFecha(proximaCita.fecha)}</strong>
-                  <small>
-                    ${escaparHTML(proximaCita.hora)}
-                    · ${escaparHTML(proximaCita.estado)}
-                  </small>
-                `
-                : `
-                  <strong>Sin citas</strong>
-                  <small>No tienes citas pendientes</small>
-                `
-            }
-          </div>
-        </article>
+      <div class="cliente-profile-form">
 
-        <article class="cliente-resumen-card">
-          <div class="cliente-resumen-icono verde">👨‍💼</div>
-          <div>
-            <span>Mi asesor</span>
-            <strong>${escaparHTML(asesor)}</strong>
-            <small>
-              ${
-                asesor === 'Por asignar'
-                  ? 'Pendiente de asignación'
-                  : 'Asesor asignado'
-              }
-            </small>
-          </div>
-        </article>
+        <div class="cliente-form-group">
 
-        <article class="cliente-resumen-card">
-          <div class="cliente-resumen-icono naranja">🔔</div>
-          <div>
-            <span>Notificaciones</span>
-            <strong>0 nuevas</strong>
-            <small>Estás al día</small>
-          </div>
-        </article>
+          <label>
+            Nombre
+          </label>
 
-        <article class="cliente-resumen-card">
-          <div class="cliente-resumen-icono morado">🤖</div>
-          <div>
-            <span>Asistente virtual</span>
-            <strong>Disponible</strong>
-            <small>Atención inmediata</small>
-          </div>
-        </article>
-      </section>
+          <input
+            type="text"
+            value="Cliente Karsan"
+            readonly
+          />
 
-      <section class="cliente-inicio-grid">
-        <article class="cliente-panel-card">
-          <div class="cliente-panel-titulo">
-            <div>
-              <h3>Estado de tu atención</h3>
-              <p>Seguimiento general de tu proceso.</p>
-            </div>
-
-            <span class="cliente-estado-activo">
-              En seguimiento
-            </span>
-          </div>
-
-          <div class="cliente-progreso">
-            <div class="cliente-progreso-pasos">
-              <div class="cliente-paso completado">
-                <span>✓</span>
-                <p>Registro</p>
-              </div>
-
-              <div class="cliente-paso completado">
-                <span>✓</span>
-                <p>Solicitud</p>
-              </div>
-
-              <div class="cliente-paso activo">
-                <span>3</span>
-                <p>Atención</p>
-              </div>
-
-              <div class="cliente-paso">
-                <span>4</span>
-                <p>Finalizado</p>
-              </div>
-            </div>
-          </div>
-        </article>
-
-        <article class="cliente-panel-card">
-          <div class="cliente-panel-titulo">
-            <div>
-              <h3>Actividad reciente</h3>
-              <p>Últimos movimientos de tu cuenta.</p>
-            </div>
-          </div>
-
-          <div class="cliente-actividad-lista">
-            <div>
-              <span class="cliente-actividad-icono">✓</span>
-              <p>
-                <strong>Cuenta activa</strong>
-                <small>Tu perfil está disponible.</small>
-              </p>
-            </div>
-
-            <div>
-              <span class="cliente-actividad-icono">📅</span>
-              <p>
-                <strong>
-                  ${
-                    proximaCita
-                      ? 'Tienes una cita programada'
-                      : 'Aún no tienes citas'
-                  }
-                </strong>
-                <small>
-                  ${
-                    proximaCita
-                      ? `${formatearFecha(
-                          proximaCita.fecha,
-                        )} a las ${escaparHTML(
-                          proximaCita.hora,
-                        )}`
-                      : 'Puedes solicitar una desde el chatbot.'
-                  }
-                </small>
-              </p>
-            </div>
-
-            <div>
-              <span class="cliente-actividad-icono">🤖</span>
-              <p>
-                <strong>Asistente disponible</strong>
-                <small>
-                  Puedes realizar preguntas en cualquier momento.
-                </small>
-              </p>
-            </div>
-          </div>
-        </article>
-      </section>
-
-      <section class="cliente-panel-card">
-        <div class="cliente-panel-titulo">
-          <div>
-            <h3>Accesos rápidos</h3>
-            <p>Ingresa directamente a las opciones principales.</p>
-          </div>
         </div>
 
-        <div class="cliente-accesos-grid">
-          <button id="inicio-ver-citas" class="cliente-acceso" type="button">
-            <span>📅</span>
-            <strong>Mis citas</strong>
-            <small>Consultar citas registradas</small>
-          </button>
+        <div class="cliente-form-group">
 
-          <button id="inicio-ver-perfil" class="cliente-acceso" type="button">
-            <span>👤</span>
-            <strong>Mi perfil</strong>
-            <small>Revisar datos personales</small>
-          </button>
+          <label>
+            Correo electrónico
+          </label>
 
-          <button id="inicio-ver-notificaciones" class="cliente-acceso" type="button">
-            <span>🔔</span>
-            <strong>Notificaciones</strong>
-            <small>Consultar novedades</small>
-          </button>
+          <input
+            type="email"
+            value="${escaparHTML(email)}"
+            readonly
+          />
 
-          <button id="inicio-abrir-chatbot-secundario" class="cliente-acceso" type="button">
-            <span>🤖</span>
-            <strong>Chatbot</strong>
-            <small>Hablar con el asistente</small>
-          </button>
         </div>
-      </section>
+
+        <div class="cliente-form-group">
+
+          <label>
+            Tipo de cuenta
+          </label>
+
+          <input
+            type="text"
+            value="Cliente"
+            readonly
+          />
+
+        </div>
+
+      </div>
+
     </div>
-  `
+  `;
 }
 
-type CitaCliente = {
-  id: string
-  clienteId: string
-  clienteNombre: string
-  asesorNombre: string
-  fecha: string
-  hora: string
-  motivo: string
-  estado: string
-}
+// =========================================================
+// UTILIDADES
+// =========================================================
 
-function obtenerCitasCliente(
-  usuario: UsuarioActivo,
-): CitaCliente[] {
-  const datos = localStorage.getItem('citas')
+function obtenerInicial(
+  email: string
+): string {
 
-  if (!datos) {
-    return []
+  if (!email) {
+    return "C";
   }
 
-  try {
-    const citas = JSON.parse(datos)
+  return email
+    .charAt(0)
+    .toUpperCase();
+}
 
-    if (!Array.isArray(citas)) {
-      return []
+// =========================================================
+
+function escaparHTML(
+  texto: string
+): string {
+
+  return String(texto)
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+    .replace(
+      /</g,
+      "&lt;"
+    )
+    .replace(
+      />/g,
+      "&gt;"
+    )
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+}
+
+// =========================================================
+
+function formatearFecha(
+  fecha: string
+): string {
+
+  try {
+
+    const fechaObjeto =
+      new Date(fecha);
+
+    if (
+      Number.isNaN(
+        fechaObjeto.getTime()
+      )
+    ) {
+      return fecha;
     }
 
-    return (citas as CitaCliente[]).filter(
-      (cita) =>
-        cita.clienteId === usuario.id ||
-        cita.clienteId === usuario.correo ||
-        cita.clienteNombre
-          .toLowerCase()
-          .includes(usuario.nombre.toLowerCase()),
-    )
-  } catch {
-    return []
-  }
-}
-
-
-function crearModuloCitas(
-  citas: CitaCliente[],
-  anio: number,
-  mes: number,
-): string {
-  return `
-    <div class="modulo-citas">
-      <div class="encabezado-modulo">
-        <div>
-          <h2>📅 Mis citas</h2>
-          <p>
-            Revisa tu calendario y consulta las citas
-            registradas a tu nombre.
-          </p>
-        </div>
-
-        <button
-          id="abrir-chat-cita"
-          class="btn-principal"
-          type="button"
-        >
-          ➕ Solicitar nueva cita
-        </button>
-      </div>
-
-      <div class="calendario-citas-layout">
-        <section class="calendario-card">
-          <div class="calendario-cabecera">
-            <button
-              id="calendario-mes-anterior"
-              class="calendario-nav"
-              type="button"
-              aria-label="Mes anterior"
-            >
-              ‹
-            </button>
-
-            <h3>${obtenerNombreMes(mes)} ${anio}</h3>
-
-            <button
-              id="calendario-mes-siguiente"
-              class="calendario-nav"
-              type="button"
-              aria-label="Mes siguiente"
-            >
-              ›
-            </button>
-          </div>
-
-          <div class="calendario-semana">
-            <span>Lun</span>
-            <span>Mar</span>
-            <span>Mié</span>
-            <span>Jue</span>
-            <span>Vie</span>
-            <span>Sáb</span>
-            <span>Dom</span>
-          </div>
-
-          <div class="calendario-dias">
-            ${crearDiasCalendario(citas, anio, mes)}
-          </div>
-
-          <div class="calendario-leyenda">
-            <span><i class="punto hoy"></i> Hoy</span>
-            <span><i class="punto pendiente"></i> Pendiente</span>
-            <span><i class="punto confirmada"></i> Confirmada</span>
-            <span><i class="punto cancelada"></i> Cancelada</span>
-          </div>
-        </section>
-
-        <aside class="detalle-dia-card">
-          <span class="detalle-dia-etiqueta">Día seleccionado</span>
-          <h3 id="calendario-fecha-seleccionada">
-            Selecciona un día
-          </h3>
-
-          <div id="calendario-detalle-citas" class="detalle-dia-contenido">
-            <p>
-              Haz clic en una fecha para ver las citas
-              programadas para ese día.
-            </p>
-          </div>
-        </aside>
-      </div>
-
-      <section class="lista-citas-seccion">
-        <div class="lista-citas-titulo">
-          <div>
-            <h3>Próximas citas</h3>
-            <p>Resumen de todas tus citas registradas.</p>
-          </div>
-        </div>
-
-        ${crearTablaCitasCliente(citas)}
-      </section>
-    </div>
-  `
-}
-
-function activarCalendarioCitas(
-  usuario: UsuarioActivo,
-  citas: CitaCliente[],
-  anio: number,
-  mes: number,
-): void {
-  document
-    .querySelector<HTMLButtonElement>('#abrir-chat-cita')
-    ?.addEventListener('click', () => {
-      mostrarSeccionCliente('chatbot', usuario)
-
-      document
-        .querySelectorAll<HTMLButtonElement>('.menu-item')
-        .forEach((item) => {
-          item.classList.toggle(
-            'active',
-            item.dataset.seccion === 'chatbot',
-          )
-        })
-    })
-
-  document
-    .querySelector<HTMLButtonElement>('#calendario-mes-anterior')
-    ?.addEventListener('click', () => {
-      const fecha = new Date(anio, mes - 1, 1)
-
-      const contenido =
-        document.querySelector<HTMLDivElement>(
-          '#contenido-cliente',
-        )
-
-      if (!contenido) {
-        return
+    return fechaObjeto.toLocaleDateString(
+      "es-EC",
+      {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
       }
+    );
 
-      contenido.innerHTML = crearModuloCitas(
-        citas,
-        fecha.getFullYear(),
-        fecha.getMonth(),
-      )
-
-      activarCalendarioCitas(
-        usuario,
-        citas,
-        fecha.getFullYear(),
-        fecha.getMonth(),
-      )
-    })
-
-  document
-    .querySelector<HTMLButtonElement>('#calendario-mes-siguiente')
-    ?.addEventListener('click', () => {
-      const fecha = new Date(anio, mes + 1, 1)
-
-      const contenido =
-        document.querySelector<HTMLDivElement>(
-          '#contenido-cliente',
-        )
-
-      if (!contenido) {
-        return
-      }
-
-      contenido.innerHTML = crearModuloCitas(
-        citas,
-        fecha.getFullYear(),
-        fecha.getMonth(),
-      )
-
-      activarCalendarioCitas(
-        usuario,
-        citas,
-        fecha.getFullYear(),
-        fecha.getMonth(),
-      )
-    })
-
-  document
-    .querySelectorAll<HTMLButtonElement>('.calendario-dia[data-fecha]')
-    .forEach((boton) => {
-      boton.addEventListener('click', () => {
-        const fecha = boton.dataset.fecha
-
-        if (!fecha) {
-          return
-        }
-
-        document
-          .querySelectorAll<HTMLButtonElement>('.calendario-dia')
-          .forEach((dia) => dia.classList.remove('seleccionado'))
-
-        boton.classList.add('seleccionado')
-        mostrarDetalleCitasDia(fecha, citas)
-      })
-    })
-}
-
-function crearDiasCalendario(
-  citas: CitaCliente[],
-  anio: number,
-  mes: number,
-): string {
-  const primerDia = new Date(anio, mes, 1)
-  const totalDias = new Date(anio, mes + 1, 0).getDate()
-  const desplazamiento = (primerDia.getDay() + 6) % 7
-  const hoy = new Date()
-  const elementos: string[] = []
-
-  for (let i = 0; i < desplazamiento; i += 1) {
-    elementos.push('<span class="calendario-vacio"></span>')
-  }
-
-  for (let dia = 1; dia <= totalDias; dia += 1) {
-    const fecha = `${anio}-${String(mes + 1).padStart(2, '0')}-${String(
-      dia,
-    ).padStart(2, '0')}`
-
-    const citasDia = citas.filter((cita) => cita.fecha === fecha)
-    const esHoy =
-      hoy.getFullYear() === anio &&
-      hoy.getMonth() === mes &&
-      hoy.getDate() === dia
-
-    const estados = citasDia
-      .map((cita) => cita.estado.toLowerCase())
-      .join(' ')
-
-    elementos.push(`
-      <button
-        class="calendario-dia ${esHoy ? 'es-hoy' : ''} ${
-          citasDia.length > 0 ? 'tiene-cita' : ''
-        }"
-        type="button"
-        data-fecha="${fecha}"
-        aria-label="Ver citas del ${formatearFecha(fecha)}"
-      >
-        <span>${dia}</span>
-
-        ${
-          citasDia.length > 0
-            ? `
-              <small class="calendario-indicadores">
-                ${crearIndicadoresEstado(estados)}
-              </small>
-            `
-            : ''
-        }
-      </button>
-    `)
-  }
-
-  return elementos.join('')
-}
-
-function crearIndicadoresEstado(estados: string): string {
-  const indicadores: string[] = []
-
-  if (estados.includes('confirmada')) {
-    indicadores.push('<i class="confirmada"></i>')
-  }
-
-  if (estados.includes('pendiente')) {
-    indicadores.push('<i class="pendiente"></i>')
-  }
-
-  if (estados.includes('cancelada')) {
-    indicadores.push('<i class="cancelada"></i>')
-  }
-
-  if (indicadores.length === 0) {
-    indicadores.push('<i class="otra"></i>')
-  }
-
-  return indicadores.join('')
-}
-
-function mostrarDetalleCitasDia(
-  fecha: string,
-  citas: CitaCliente[],
-): void {
-  const titulo =
-    document.querySelector<HTMLHeadingElement>(
-      '#calendario-fecha-seleccionada',
-    )
-
-  const detalle =
-    document.querySelector<HTMLDivElement>(
-      '#calendario-detalle-citas',
-    )
-
-  if (!titulo || !detalle) {
-    return
-  }
-
-  const citasDia = citas.filter((cita) => cita.fecha === fecha)
-  titulo.textContent = formatearFecha(fecha)
-
-  if (citasDia.length === 0) {
-    detalle.innerHTML = `
-      <div class="detalle-dia-vacio">
-        <span>📭</span>
-        <p>No tienes citas programadas para este día.</p>
-      </div>
-    `
-    return
-  }
-
-  detalle.innerHTML = citasDia
-    .map(
-      (cita) => `
-        <article class="detalle-cita-item">
-          <div class="detalle-cita-hora">
-            ${escaparHTML(cita.hora)}
-          </div>
-
-          <div>
-            <strong>${escaparHTML(cita.motivo)}</strong>
-            <span>
-              Asesor:
-              ${escaparHTML(cita.asesorNombre || 'Por asignar')}
-            </span>
-
-            <small
-              class="estado estado-${cita.estado
-                .toLowerCase()
-                .replace(' ', '-')}"
-            >
-              ${escaparHTML(cita.estado)}
-            </small>
-          </div>
-        </article>
-      `,
-    )
-    .join('')
-}
-
-function obtenerNombreMes(mes: number): string {
-  const meses = [
-    'Enero',
-    'Febrero',
-    'Marzo',
-    'Abril',
-    'Mayo',
-    'Junio',
-    'Julio',
-    'Agosto',
-    'Septiembre',
-    'Octubre',
-    'Noviembre',
-    'Diciembre',
-  ]
-
-  return meses[mes] ?? ''
-}
-
-function crearTablaCitasCliente(
-  citas: CitaCliente[],
-): string {
-  if (citas.length === 0) {
-    return `
-      <div class="empty-state">
-        <h3>No tienes citas registradas</h3>
-        <p>
-          Usa el chatbot para solicitar una nueva cita.
-        </p>
-      </div>
-    `
-  }
-
-  return `
-    <div class="tabla-contenedor">
-      <table class="tabla-datos">
-        <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Hora</th>
-            <th>Asesor</th>
-            <th>Motivo</th>
-            <th>Estado</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          ${citas
-            .map(
-              (cita) => `
-                <tr>
-                  <td>${formatearFecha(cita.fecha)}</td>
-                  <td>${escaparHTML(cita.hora)}</td>
-                  <td>
-                    ${escaparHTML(
-                      cita.asesorNombre || 'Por asignar',
-                    )}
-                  </td>
-                  <td>${escaparHTML(cita.motivo)}</td>
-                  <td>
-                    <span
-                      class="estado estado-${cita.estado
-                        .toLowerCase()
-                        .replace(' ', '-')}"
-                    >
-                      ${escaparHTML(cita.estado)}
-                    </span>
-                  </td>
-                </tr>
-              `,
-            )
-            .join('')}
-        </tbody>
-      </table>
-    </div>
-  `
-}
-
-function obtenerUsuarioActivo(): UsuarioActivo | null {
-  const datos = localStorage.getItem('usuarioActivo')
-
-  if (!datos) {
-    return null
-  }
-
-  try {
-    return JSON.parse(datos) as UsuarioActivo
   } catch {
-    return null
+
+    return fecha;
   }
-}
-
-function obtenerInicial(nombre: string): string {
-  return nombre.trim().charAt(0).toUpperCase()
-}
-
-function formatearFecha(fecha: string): string {
-  const partes = fecha.split('-')
-
-  if (partes.length !== 3) {
-    return fecha
-  }
-
-  const [anio, mes, dia] = partes
-  return `${dia}/${mes}/${anio}`
-}
-
-function escaparHTML(texto: string): string {
-  const elemento = document.createElement('div')
-  elemento.textContent = texto
-  return elemento.innerHTML
 }

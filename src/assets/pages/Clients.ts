@@ -5,12 +5,16 @@ export type EstadoCliente = 'Activo' | 'Inactivo'
 export type Cliente = {
   id: string
   nombre: string
+  apellido?: string
   correo: string
   telefono: string
   ciudad: string
   servicio: string
   estado: EstadoCliente
   fechaRegistro: string
+  contrasena?: string
+  rol?: 'cliente'
+  foto?: string
 }
 
 export function obtenerClientes(): Cliente[] {
@@ -20,6 +24,7 @@ export function obtenerClientes(): Cliente[] {
 
   try {
     const clientes = JSON.parse(datos)
+
     return Array.isArray(clientes)
       ? clientes.map(normalizarCliente)
       : []
@@ -62,7 +67,9 @@ export function crearModuloClientes(): string {
         <span>✅</span>
         <div>
           <small>Clientes activos</small>
-          <strong>${clientes.filter((cliente) => cliente.estado === 'Activo').length}</strong>
+          <strong>
+            ${clientes.filter((cliente) => cliente.estado === 'Activo').length}
+          </strong>
         </div>
       </article>
 
@@ -70,7 +77,9 @@ export function crearModuloClientes(): string {
         <span>⏸️</span>
         <div>
           <small>Clientes inactivos</small>
-          <strong>${clientes.filter((cliente) => cliente.estado === 'Inactivo').length}</strong>
+          <strong>
+            ${clientes.filter((cliente) => cliente.estado === 'Inactivo').length}
+          </strong>
         </div>
       </article>
     </div>
@@ -95,6 +104,7 @@ export function activarModuloClientes(): void {
       const clientesFiltrados = obtenerClientes().filter((cliente) =>
         [
           cliente.nombre,
+          cliente.apellido ?? '',
           cliente.correo,
           cliente.telefono,
           cliente.ciudad,
@@ -143,18 +153,28 @@ function crearTablaClientes(clientes: Cliente[]): string {
               (cliente) => `
                 <tr>
                   <td>
-                    <strong>${escaparHTML(cliente.nombre)}</strong>
+                    <strong>
+                      ${escaparHTML(
+                        `${cliente.nombre}${cliente.apellido ? ` ${cliente.apellido}` : ''}`,
+                      )}
+                    </strong>
                     <small>${escaparHTML(cliente.correo)}</small>
                   </td>
+
                   <td>${escaparHTML(cliente.telefono)}</td>
+
                   <td>${escaparHTML(cliente.ciudad)}</td>
+
                   <td>${escaparHTML(cliente.servicio)}</td>
+
                   <td>
-                    <span class="estado-lead ${cliente.estado.toLowerCase()}">
+                    <span class="estado-lead ${obtenerClaseEstado(cliente.estado)}">
                       ${escaparHTML(cliente.estado)}
                     </span>
                   </td>
+
                   <td>${escaparHTML(cliente.fechaRegistro)}</td>
+
                   <td>
                     <button
                       class="btn-editar-cliente"
@@ -184,12 +204,15 @@ function crearTablaClientes(clientes: Cliente[]): string {
 
 function crearCliente(): void {
   const nombre = window.prompt('Nombre completo del cliente:')
+
   if (!nombre?.trim()) return
 
   const telefono = window.prompt('WhatsApp o teléfono del cliente:')
+
   if (!telefono?.trim()) return
 
   const correo = window.prompt('Correo electrónico del cliente:')
+
   if (!correo?.trim()) return
 
   if (!validarCorreo(correo.trim())) {
@@ -198,9 +221,13 @@ function crearCliente(): void {
   }
 
   const ciudad = window.prompt('Ciudad del cliente:', 'Quito')
+
   if (!ciudad?.trim()) return
 
-  const servicio = window.prompt('Servicio, curso o producto adquirido:')
+  const servicio = window.prompt(
+    'Servicio, curso o producto adquirido:',
+  )
+
   if (!servicio?.trim()) return
 
   const nuevoCliente: Cliente = {
@@ -212,12 +239,14 @@ function crearCliente(): void {
     servicio: servicio.trim(),
     estado: 'Activo',
     fechaRegistro: new Date().toLocaleDateString('es-EC'),
+    rol: 'cliente',
   }
 
   const clientes = obtenerClientes()
 
   const correoExiste = clientes.some(
-    (cliente) => cliente.correo === nuevoCliente.correo,
+    (cliente) =>
+      cliente.correo.toLowerCase() === nuevoCliente.correo.toLowerCase(),
   )
 
   if (correoExiste) {
@@ -226,6 +255,7 @@ function crearCliente(): void {
   }
 
   clientes.push(nuevoCliente)
+
   guardarClientes(clientes)
 
   crearNotificacion(
@@ -235,25 +265,41 @@ function crearCliente(): void {
   )
 
   actualizarModuloCompleto()
+
   window.alert('Cliente registrado correctamente.')
 }
 
 function editarCliente(idCliente: string): void {
   const clientes = obtenerClientes()
-  const cliente = clientes.find((item) => item.id === idCliente)
+
+  const cliente = clientes.find(
+    (item) => item.id === idCliente,
+  )
 
   if (!cliente) {
     window.alert('No se encontró el cliente.')
     return
   }
 
-  const nombre = window.prompt('Nombre completo:', cliente.nombre)
+  const nombre = window.prompt(
+    'Nombre completo:',
+    cliente.nombre,
+  )
+
   if (!nombre?.trim()) return
 
-  const telefono = window.prompt('WhatsApp o teléfono:', cliente.telefono)
+  const telefono = window.prompt(
+    'WhatsApp o teléfono:',
+    cliente.telefono,
+  )
+
   if (!telefono?.trim()) return
 
-  const correo = window.prompt('Correo electrónico:', cliente.correo)
+  const correo = window.prompt(
+    'Correo electrónico:',
+    cliente.correo,
+  )
+
   if (!correo?.trim()) return
 
   if (!validarCorreo(correo.trim())) {
@@ -261,16 +307,22 @@ function editarCliente(idCliente: string): void {
     return
   }
 
-  const ciudad = window.prompt('Ciudad:', cliente.ciudad)
+  const ciudad = window.prompt(
+    'Ciudad:',
+    cliente.ciudad,
+  )
+
   if (!ciudad?.trim()) return
 
   const servicio = window.prompt(
     'Servicio, curso o producto adquirido:',
     cliente.servicio,
   )
+
   if (!servicio?.trim()) return
 
   const estado = seleccionarEstado(cliente.estado)
+
   if (!estado) return
 
   cliente.nombre = nombre.trim()
@@ -281,7 +333,9 @@ function editarCliente(idCliente: string): void {
   cliente.estado = estado
 
   guardarClientes(clientes)
+
   actualizarModuloCompleto()
+
   window.alert('Cliente actualizado correctamente.')
 }
 
@@ -297,7 +351,9 @@ function eliminarCliente(idCliente: string): void {
   )
 
   guardarClientes(clientesActualizados)
+
   actualizarModuloCompleto()
+
   window.alert('Cliente eliminado correctamente.')
 }
 
@@ -316,62 +372,118 @@ function seleccionarEstado(
   )
 
   if (!respuesta?.trim()) return null
-  if (respuesta.trim() === '1') return 'Activo'
-  if (respuesta.trim() === '2') return 'Inactivo'
+
+  if (respuesta.trim() === '1') {
+    return 'Activo'
+  }
+
+  if (respuesta.trim() === '2') {
+    return 'Inactivo'
+  }
 
   window.alert('El estado seleccionado no es válido.')
+
   return null
 }
 
-function actualizarListaClientes(clientes: Cliente[]): void {
-  const lista = document.querySelector<HTMLDivElement>('#lista-clientes')
+function actualizarListaClientes(
+  clientes: Cliente[],
+): void {
+  const lista =
+    document.querySelector<HTMLDivElement>(
+      '#lista-clientes',
+    )
+
   if (!lista) return
 
   lista.innerHTML = crearTablaClientes(clientes)
+
   activarBotonesClientes()
 }
 
 function actualizarModuloCompleto(): void {
-  const contenido = document.querySelector<HTMLDivElement>(
-    '#contenido-dashboard',
-  )
+  const contenido =
+    document.querySelector<HTMLDivElement>(
+      '#contenido-dashboard',
+    )
 
   if (!contenido) return
 
   contenido.innerHTML = crearModuloClientes()
+
   activarModuloClientes()
 }
 
 function activarBotonesClientes(): void {
   document
-    .querySelectorAll<HTMLButtonElement>('.btn-editar-cliente')
+    .querySelectorAll<HTMLButtonElement>(
+      '.btn-editar-cliente',
+    )
     .forEach((boton) => {
       boton.addEventListener('click', () => {
-        if (boton.dataset.id) editarCliente(boton.dataset.id)
+        if (boton.dataset.id) {
+          editarCliente(boton.dataset.id)
+        }
       })
     })
 
   document
-    .querySelectorAll<HTMLButtonElement>('.btn-eliminar-cliente')
+    .querySelectorAll<HTMLButtonElement>(
+      '.btn-eliminar-cliente',
+    )
     .forEach((boton) => {
       boton.addEventListener('click', () => {
-        if (boton.dataset.id) eliminarCliente(boton.dataset.id)
+        if (boton.dataset.id) {
+          eliminarCliente(boton.dataset.id)
+        }
       })
     })
 }
 
-function normalizarCliente(dato: Partial<Cliente>): Cliente {
+function normalizarCliente(
+  dato: Partial<Cliente>,
+): Cliente {
   return {
     id: dato.id ?? crypto.randomUUID(),
+
     nombre: dato.nombre ?? 'Sin nombre',
+
+    apellido: dato.apellido ?? '',
+
     correo: dato.correo ?? '',
+
     telefono: dato.telefono ?? '',
+
     ciudad: dato.ciudad ?? 'No registrada',
+
     servicio: dato.servicio ?? 'No especificado',
-    estado: dato.estado === 'Inactivo' ? 'Inactivo' : 'Activo',
+
+    estado:
+      dato.estado === 'Inactivo'
+        ? 'Inactivo'
+        : 'Activo',
+
     fechaRegistro:
-      dato.fechaRegistro ?? new Date().toLocaleDateString('es-EC'),
+      dato.fechaRegistro ??
+      new Date().toLocaleDateString('es-EC'),
+
+    contrasena: dato.contrasena,
+
+    rol: 'cliente',
+
+    foto: dato.foto,
   }
+}
+
+function obtenerClaseEstado(
+  estado: EstadoCliente,
+): string {
+  return estado
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^\w]+/g, '-')
+    .replace(/^-+|-+$/g, '')
 }
 
 function validarCorreo(correo: string): boolean {
@@ -380,6 +492,8 @@ function validarCorreo(correo: string): boolean {
 
 function escaparHTML(texto: string): string {
   const elemento = document.createElement('div')
+
   elemento.textContent = texto
+
   return elemento.innerHTML
 }
